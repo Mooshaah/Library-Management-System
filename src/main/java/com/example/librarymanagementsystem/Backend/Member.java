@@ -8,7 +8,7 @@ public class Member {
     private String department;
     private String password;
 
-    public Member(String Fname, String Lname, String phoneNumber, String email, String password,String type, String department) { //add password attrib
+    public Member(String Fname, String Lname, String phoneNumber, String email, String password,String type, String department) {
         this.Fname = Fname;
         this.Lname = Lname;
         this.phoneNumber = phoneNumber;

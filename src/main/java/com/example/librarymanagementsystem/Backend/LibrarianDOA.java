@@ -1,9 +1,4 @@
 package com.example.librarymanagementsystem.Backend;
-
-import javafx.scene.control.TitledPane;
-
-import java.lang.classfile.constantpool.FieldRefEntry;
-import java.lang.reflect.GenericArrayType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -90,9 +90,6 @@ public class MemberDOA {
                     System.out.println("Email already exists !");
                     return true;
 
-                } else {
-                    System.out.println("Email does not exist !");
-                    return false;
                 }
             }
         } catch (SQLException e) {
