@@ -75,6 +75,7 @@ public class SignUpFormApp extends Application {
             System.out.println("Form Submitted");
             Member member1 = new Member(firstNameField.getText(), lastNameField.getText(),phoneField.getText(),emailField.getText(),passwordField.getText(),typeField.getText(),departmentField.getText());
             member.CreateMember(member1);
+            //Testing purposes
 //            System.out.println("First Name: " + firstNameField.getText());
 //            System.out.println("Last Name: " + lastNameField.getText());
 //            System.out.println("Phone Number: " + phoneField.getText());
