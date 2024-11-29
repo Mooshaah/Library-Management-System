@@ -6,12 +6,14 @@ public class Librarian {
     private String LastName;
     private String phoneNumber;
     private String email;
+    private String password;
 
-    public Librarian(String FirstName, String LastName, String phoneNumber, String email) {
+    public Librarian(String FirstName, String LastName, String phoneNumber, String email, String password) {
         this.FirstName = FirstName;
         this.LastName = LastName;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.password = password;
     }
 
     public void setFirstName(String firstName) {
@@ -44,5 +46,8 @@ public class Librarian {
 
     public String getEmail() {
         return email;
+    }
+    public String getPassword() {
+        return password;
     }
 }

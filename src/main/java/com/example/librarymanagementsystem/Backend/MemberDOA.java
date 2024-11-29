@@ -32,7 +32,7 @@ public class MemberDOA {
     }
 
     public void updateMember(Member member, int memberId) {
-        String query = "UPDATE members SET FirstName = ?, LastName = ?, PhoneNumber = ?, Email = ?, Type = ?, Department = ? WHERE id = ?";
+        String query = "UPDATE member SET FirstName = ?, LastName = ?, PhoneNumber = ?, Email = ?, Type = ?, Department = ? WHERE MemberID = ?";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, member.getFname());
@@ -42,6 +42,7 @@ public class MemberDOA {
             statement.setString(5, member.getType());
             statement.setString(6, member.getDepartment());
             statement.setInt(7, memberId);
+            statement.executeUpdate();
              System.out.println("Member after update: ");
              getMemberById(memberId);
         } catch (SQLException e) {

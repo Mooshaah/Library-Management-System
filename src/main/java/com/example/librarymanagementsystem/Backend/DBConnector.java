@@ -12,15 +12,10 @@ public class DBConnector {
         return DriverManager.getConnection(url,user,password);
     }
 
-//    public Connection closeConnection() throws SQLException {
-//        return
-//    }
+
     public static void main(String[] args) throws SQLException {
 
-        // first statement to be executed on the server
-//        Librarian librarian1 = new Librarian("Philo","falafel","02215334","philo@uofcanada.edu.eg");
-//        LibrarianDOA librarian = new LibrarianDOA();
-//        librarian.createLibrarian(librarian1);
+
 
     // second statement to be executed
         MemberDOA member = new MemberDOA();

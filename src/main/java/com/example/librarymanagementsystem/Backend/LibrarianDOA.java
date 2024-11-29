@@ -13,13 +13,14 @@ public class LibrarianDOA {
     }
 
     public void createLibrarian(Librarian librarian) {
-        String query = "INSERT INTO librarian (FirstName,LastName,PhoneNumber,Email) VALUES (?,?,?,?)";
+        String query = "INSERT INTO librarian (FirstName,LastName,PhoneNumber,Email) VALUES (?,?,?,?)"; // don't forget to add password col after after taking changes in the table
         try(Connection connection = dbConnector.connect();
             PreparedStatement statement = connection.prepareStatement(query)){
             statement.setString(1,librarian.getFirstName());
             statement.setString(2, librarian.getLastName());
             statement.setInt(3, Integer.parseInt(librarian.getPhoneNumber()));
             statement.setString(4, librarian.getEmail());
+            statement.setString(5, librarian.getPhoneNumber());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

@@ -6,9 +6,9 @@ public class Member {
     private String email;
     private String type;
     private String department;
+    private String password;
 
-
-    public Member(String Fname, String Lname, String phoneNumber, String email, String type, String department) {
+    public Member(String Fname, String Lname, String phoneNumber, String email, String type, String department) { //add password attrib
         this.Fname = Fname;
         this.Lname = Lname;
         this.phoneNumber = phoneNumber;
@@ -59,5 +59,5 @@ public class Member {
         this.department = department;
     }
 
-    
+
 }
