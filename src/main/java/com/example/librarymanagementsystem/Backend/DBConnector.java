@@ -1,6 +1,7 @@
 package com.example.librarymanagementsystem.Backend;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 //import java.sql.
@@ -17,9 +18,9 @@ public class DBConnector {
     public static void main(String[] args) throws SQLException {
 
         // second statement to be executed
-        MemberDOA member = new MemberDOA();
-        Member memberDummy = new Member("Mohamed", "Elshaarawy", "01265775635", "anon@philo.com", "asd123", "Student", "CS");
-        Member memberDummy2 = new Member("Mohamed", "edited", "01265775635", "mohamed@hotmail.com", "asd123", "Student", "CS");
+//        MemberDOA member = new MemberDOA();
+//        Member memberDummy = new Member("Mohamed", "Elshaarawy", "01265775635", "anon@philo.com", "asd123", "Student", "CS");
+//        Member memberDummy2 = new Member("Mohamed", "edited", "01265775635", "mohamed@hotmail.com", "asd123", "Student", "CS");
 
 
         // ------------- The commented out code is for testing purposes --------------- //
@@ -34,6 +35,11 @@ public class DBConnector {
 //        member.checkMemberEmailAndPassword("mohamed@hotmail.com", "asd123");
 
 //        member.DelteMember(2);
-         
+
+        LibrarianDOA librarian = new LibrarianDOA();
+        Book book1 = new Book(15,"1970-11-19","Ex","Love");
+        Book book2 = new Book(5,"1970-11-19","Ex-part2","Love");
+//        librarian.addBook(book2);
+         librarian.getBookByGenre("Love");
     }
 }

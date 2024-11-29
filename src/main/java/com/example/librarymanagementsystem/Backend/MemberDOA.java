@@ -8,6 +8,7 @@ import java.sql.SQLException;
 public class MemberDOA {
     private DBConnector dbConnector;
     private Member member;
+
     public MemberDOA() {
         dbConnector = new DBConnector();
     }
@@ -109,13 +110,13 @@ public class MemberDOA {
             passStatement.setString(1, password);
             ResultSet emailResult = emailStatement.executeQuery();
             ResultSet passResult = passStatement.executeQuery();
-            while(emailResult.next() && passResult.next()){
+            while (emailResult.next() && passResult.next()) {
                 int eCount = emailResult.getInt("Ecount");
                 int pCount = passResult.getInt("Pcount");
-                if (eCount > 0 && pCount > 0){
+                if (eCount > 0 && pCount > 0) {
                     System.out.println("Email and password matches !");
                     return true;
-                }else{
+                } else {
                     System.out.println("Email or password does not match !");
                     return false;
                 }
@@ -129,16 +130,16 @@ public class MemberDOA {
 
     public void DelteMember(int memberId) {
         String query = "DELETE FROM member WHERE MemberID = ?";
-        try(Connection connection = dbConnector.connect();
-        PreparedStatement statement= connection.prepareStatement(query)){
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, memberId);
             int ra = statement.executeUpdate();
-            if(ra > 0){
-                System.out.println("Member with ID "+memberId+" has been deleted");
+            if (ra > 0) {
+                System.out.println("Member with ID " + memberId + " has been deleted");
             } else {
                 System.out.println("No member with such ID !");
             }
-        } catch(SQLException e){
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
