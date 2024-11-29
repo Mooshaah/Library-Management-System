@@ -118,19 +118,32 @@ public class LibrarianDOA {
         }
     }
 
-    public void getBookByTitle(String title, Book book){
+    public void getBookByTitle(String title) {
         String query = "SELECT * FROM book WHERE Title = ?";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, title);
-            if(title == book.getTitle()){
-                System.out.println("The book" + title + "is available");}
-            else {
-                System.out.println("The book" + title + "isn't in the library");
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                int bookID = rs.getInt("BookID");
+                String bookTitle = rs.getString("Title");
+                String genre = rs.getString("Genre");
+                String pubDate = rs.getString("PublicationDate");
+                boolean availability = rs.getBoolean("Availability");
+
+                System.out.println("Book Details:");
+                System.out.println("ID: " + bookID);
+                System.out.println("Title: " + bookTitle);
+                System.out.println("Genre: " + genre);
+                System.out.println("Publication Date: " + pubDate);
+                System.out.println("Available: " + availability);
+            } else {
+                System.out.println("The book titled: '" + title + "' is not available in the library.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
 
 }
