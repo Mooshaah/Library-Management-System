@@ -8,25 +8,27 @@ import java.sql.SQLException;
 public class MemberDOA {
     private DBConnector dbConnector;
     private Member member;
-    private int librarianId;
-
     public MemberDOA() {
         dbConnector = new DBConnector();
     }
 
-    public void CreateMember(Member member, int librarianId) {
-        String query = "INSERT INTO member (FirstName, LastName, PhoneNumber, Email, Password, Type, Department, librarianID) VALUES (?,?,?,?,?,?,?,?)";
+    public void CreateMember(Member member) {
+        String query = "INSERT INTO member (FirstName, LastName, PhoneNumber, Email, Password, Type, Department) VALUES (?,?,?,?,?,?,?)";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, member.getFname());
-            statement.setString(2, member.getLname());
-            statement.setString(3, member.getPhoneNumber());
-            statement.setString(4, member.getEmail());
-            statement.setString(5, member.getPassword());
-            statement.setString(6, member.getType());
-            statement.setString(7, member.getDepartment());
-            statement.setInt(8, librarianId);
-            statement.executeUpdate();
+            if (!checkMemberEmail(member.getEmail())) {
+                statement.setString(1, member.getFname());
+                statement.setString(2, member.getLname());
+                statement.setString(3, member.getPhoneNumber());
+                statement.setString(4, member.getEmail());
+                statement.setString(5, member.getPassword());
+                statement.setString(6, member.getType());
+                statement.setString(7, member.getDepartment());
+                statement.executeUpdate();
+            } else {
+                System.out.println("Email Already Exists");
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -70,7 +72,6 @@ public class MemberDOA {
                 String memberDepartment = result.getString("Department");
                 System.out.println("MemberID: " + memberId + " First Name: " + memberFname + " Last Name: " + memberLname + " PhoneNumber: " + memberPhoneNumber + " Email: " + memberEmail + " Password: " + memberPassword + " Type: " + memberType + " Department: " + memberDepartment);
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -81,9 +82,9 @@ public class MemberDOA {
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, email);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                int count = rs.getInt("count");
+            ResultSet ra = statement.executeQuery();
+            if (ra.next()) {
+                int count = ra.getInt("count");
 
                 if (count > 0) {
                     System.out.println("Email already exists !");
@@ -94,8 +95,6 @@ public class MemberDOA {
                     return false;
                 }
             }
-
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -103,8 +102,8 @@ public class MemberDOA {
     }
 
     public Boolean checkMemberEmailAndPassword(String email, String password) {
-        String emailQuery = "SELECT Count(*) AS Ecount FROM member WHERE Email = ?";
-        String passwordQuery = "SELECT Count(*) AS Pcount FROM member WHERE Password = ?";
+        String emailQuery = "SELECT Count(*) AS Ecount FROM member WHERE BINARY Email = ?";
+        String passwordQuery = "SELECT Count(*) AS Pcount FROM member WHERE BINARY Password = ?";
 
         try (Connection connection = dbConnector.connect();
              PreparedStatement emailStatement = connection.prepareStatement(emailQuery);
@@ -129,6 +128,22 @@ public class MemberDOA {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void DelteMember(int memberId) {
+        String query = "DELETE FROM member WHERE MemberID = ?";
+        try(Connection connection = dbConnector.connect();
+        PreparedStatement statement= connection.prepareStatement(query)){
+            statement.setInt(1, memberId);
+            int ra = statement.executeUpdate();
+            if(ra > 0){
+                System.out.println("Member with ID "+memberId+" has been deleted");
+            } else {
+                System.out.println("No member with such ID !");
+            }
+        } catch(SQLException e){
+            e.printStackTrace();
+        }
     }
 }
 
