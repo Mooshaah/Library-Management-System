@@ -4,6 +4,7 @@ module com.example.librarymanagementsystem {
 
     requires org.kordamp.bootstrapfx.core;
     requires java.sql;
+    requires jdk.jdi;
 
     opens com.example.librarymanagementsystem to javafx.fxml;
     exports com.example.librarymanagementsystem;
