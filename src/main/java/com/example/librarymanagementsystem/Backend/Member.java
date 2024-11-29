@@ -7,6 +7,7 @@ public class Member {
     private String type;
     private String department;
 
+
     public Member(String Fname, String Lname, String phoneNumber, String email, String type, String department) {
         this.Fname = Fname;
         this.Lname = Lname;
@@ -58,35 +59,5 @@ public class Member {
         this.department = department;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//    public void CreateMember(String Fname, String Lname, String phoneNumber, String email, String type, String department) {
-//        String query = "INSERT INTO Members (Fname, Lname, phoneNumber, email, type, department) VALUES (?,?,?,?,?,?)";
-//        try(Connection connection = dbConnector.connect();
-//            PreparedStatement statement = connection.prepareStatement(query)){
-//            statement.setString(1,Fname);
-//            statement.setString(2,Lname);
-//            statement.setInt(3, Integer.parseInt(phoneNumber));
-//            statement.setString(4,email);
-//            statement.setString(5, type);
-//            statement.setString(6,department);
-//
-//            statement.executeUpdate();
-//        } catch (SQLException e){
-//            e.printStackTrace();
-//        }
-//    }
-
-
+    
 }
