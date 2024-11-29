@@ -8,11 +8,12 @@ public class Member {
     private String department;
     private String password;
 
-    public Member(String Fname, String Lname, String phoneNumber, String email, String type, String department) { //add password attrib
+    public Member(String Fname, String Lname, String phoneNumber, String email, String password,String type, String department) { //add password attrib
         this.Fname = Fname;
         this.Lname = Lname;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.password = password;
         this.type = type;
         this.department = department;
     }
@@ -59,5 +60,8 @@ public class Member {
         this.department = department;
     }
 
+    public String getPassword() {
+        return password;
+    }
 
 }
