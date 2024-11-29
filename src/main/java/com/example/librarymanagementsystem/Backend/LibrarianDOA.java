@@ -105,13 +105,21 @@ public class LibrarianDOA {
         PreparedStatement statement = connection.prepareStatement(query)){
             statement.setString(1, genre);
             ResultSet rs = statement.executeQuery();
-            while(rs.next()){
+            if(rs.next()){
                 int bookID = rs.getInt("BookID");
                 String bookTitle = rs.getString("Title");
                 String Genre = rs.getString("Genre");
                 String pubDate = rs.getString("PublicationDate");
-                Boolean availability = rs.getBoolean("availability");
-                System.out.println("Book ID: "+ bookID+" Genre: "+Genre+" Publication Date: "+pubDate+" Availability "+ availability);
+                boolean availability = rs.getBoolean("availability");
+
+                System.out.println("Book Details:");
+                System.out.println("ID: " + bookID);
+                System.out.println("Title: " + bookTitle);
+                System.out.println("Genre: " + genre);
+                System.out.println("Publication Date: " + pubDate);
+                System.out.println("Available: " + availability);
+            }else{
+                System.out.println("The book genre: '" + genre + "' is not available in the library.");
             }
         }catch(SQLException e){
             e.printStackTrace();
