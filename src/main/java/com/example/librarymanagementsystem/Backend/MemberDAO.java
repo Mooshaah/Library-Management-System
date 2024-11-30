@@ -137,5 +137,26 @@ public class MemberDAO {
             e.printStackTrace();
         }
     }
+
+    public int getMemberIDByName(String FirstName, String LastName) {
+        String query = "SELECT MemberID FROM member WHERE FirstName = ? AND LastName = ?";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, FirstName);
+            statement.setString(2, LastName);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                int memberID = rs.getInt("MemberID");
+                System.out.println("Member ID: " + memberID);
+                return memberID;
+            }
+        } catch(
+                SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return-1; // a special return that means no member found
+    }
+
 }
 

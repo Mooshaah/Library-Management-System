@@ -17,8 +17,8 @@ public class DBConnector {
     public static void main(String[] args) throws SQLException {
 
         // second statement to be executed
-//        MemberDOA member = new MemberDOA();
-//        Member memberDummy = new Member("Mohamed", "Elshaarawy", "01265775635", "anon@philo.com", "asd123", "Student", "CS");
+        MemberDAO member = new MemberDAO();
+        Member memberDummy = new Member("Mohamed", "Elshaarawy", "01265775635", "anon@philo.com", "asd123", "Student", "CS");
 //        Member memberDummy2 = new Member("Mohamed", "edited", "01265775635", "mohamed@hotmail.com", "asd123", "Student", "CS");
 
 
@@ -34,21 +34,23 @@ public class DBConnector {
 //        member.checkMemberEmailAndPassword("mohamed@hotmail.com", "asd123");
 
 //        member.DelteMember(2);
-
+        member.getMemberIDByName("Mohamed","Elshaarawy");
         LibrarianDAO librarian = new LibrarianDAO();
-        Book book1 = new Book(true, "1970-11-19", "Ex", "Love");
-        Book book2 = new Book(true, "1970-11-19", "Ex-part2", "Love");
-        Book book3 = new Book(true, "1970-11-19", "Ex-part3", "Test");
-        Book book4 = new Book(true, "1970-11-19", "test1", "Love");
-        Book book5 = new Book(true, "1970-11-19", "test5", "Love");
+//        Book book1 = new Book(true, "1970-11-19", "Ex", "Love");
+//        Book book2 = new Book(true, "1970-11-19", "Ex-part2", "Love");
+//        Book book3 = new Book(true, "1970-11-19", "Ex-part3", "Test");
+//        Book book4 = new Book(true, "1970-11-19", "test1", "Love");
+//        Book book5 = new Book(true, "1970-11-19", "test5", "Love");
         Author author = new Author("William", "Shakespeare");
 
 //        librarian.deleteBook(8);
 
 //        librarian.addBook(book1, author);
-        librarian.getBookByAuthor(author);
+//        librarian.getBookByAuthor(author);
 //         librarian.getBookByGenre("asd");
 //         librarian.getLibrarianByID(1);
 //        librarian.getBookByTitle("Ex-part2");
+//        librarian.getBookIDByTitle("EX", author.getFirstName(), author.getLastName());
+//        librarian.getAuthorById(1);
     }
 }
