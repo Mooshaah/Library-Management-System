@@ -1,16 +1,16 @@
 package com.example.librarymanagementsystem.Backend;
 
 public class Member {
-    private String Fname, Lname;
+    private String firstName, lastName;
     private String phoneNumber;
     private String email;
     private String type;
     private String department;
     private String password;
 
-    public Member(String Fname, String Lname, String phoneNumber, String email, String password,String type, String department) {
-        this.Fname = Fname;
-        this.Lname = Lname;
+    public Member(String Fname, String lastName, String phoneNumber, String email, String password, String type, String department) {
+        this.firstName = Fname;
+        this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.password = password;
@@ -18,17 +18,20 @@ public class Member {
         this.department = department;
     }
 
-    public void setFname(String fname) {
-        Fname = fname;
+    public void setFirstName(String fname) {
+        firstName = fname;
     }
-    public String getFname() {
-        return Fname;
+
+    public String getFirstName() {
+        return firstName;
     }
-    public void setLname(String lname) {
-        Lname = lname;
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
-    public String getLname() {
-        return Lname;
+
+    public String getLastName() {
+        return lastName;
     }
 
     public void setPhoneNumber(String phoneNumber) {
@@ -42,12 +45,15 @@ public class Member {
     public void setEmail(String email) {
         this.email = email;
     }
+
     public String getEmail() {
         return email;
     }
+
     public void setType(String type) {
         this.type = type;
     }
+
     public String getType() {
         return type;
     }

@@ -7,5 +7,6 @@ module com.example.librarymanagementsystem {
     requires jdk.jdi;
 
     opens com.example.librarymanagementsystem to javafx.fxml;
-    exports com.example.librarymanagementsystem;
+    exports com.example.librarymanagementsystem.javaFX;
+    opens com.example.librarymanagementsystem.javaFX to javafx.fxml;
 }

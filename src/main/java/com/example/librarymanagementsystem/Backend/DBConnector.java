@@ -1,7 +1,6 @@
 package com.example.librarymanagementsystem.Backend;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 //import java.sql.
@@ -36,10 +35,20 @@ public class DBConnector {
 
 //        member.DelteMember(2);
 
-        LibrarianDOA librarian = new LibrarianDOA();
-        Book book1 = new Book(15,"1970-11-19","Ex","Love");
-        Book book2 = new Book(5,"1970-11-19","Ex-part2","Love");
-//        librarian.addBook(book2);
-         librarian.getBookByGenre("Love");
+        LibrarianDAO librarian = new LibrarianDAO();
+        Book book1 = new Book(true, "1970-11-19", "Ex", "Love");
+        Book book2 = new Book(true, "1970-11-19", "Ex-part2", "Love");
+        Book book3 = new Book(true, "1970-11-19", "Ex-part3", "Test");
+        Book book4 = new Book(true, "1970-11-19", "test1", "Love");
+        Book book5 = new Book(true, "1970-11-19", "test5", "Love");
+        Author author = new Author("William", "Shakespeare");
+
+//        librarian.deleteBook(8);
+
+//        librarian.addBook(book1, author);
+        librarian.getBookByAuthor(author);
+//         librarian.getBookByGenre("asd");
+//         librarian.getLibrarianByID(1);
+//        librarian.getBookByTitle("Ex-part2");
     }
 }

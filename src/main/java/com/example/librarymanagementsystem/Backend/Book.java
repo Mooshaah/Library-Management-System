@@ -1,33 +1,19 @@
 package com.example.librarymanagementsystem.Backend;
 
 public class Book {
-    int bookId;
-    int availability;
-
+    boolean availability;
     String publicationDate;
     String title;
     String genre;
 
-    public Book(int availability, String publicationDate, String title, String genre) {
+    public Book(boolean availability, String publicationDate, String title, String genre) {
         this.availability = availability;
         this.publicationDate = publicationDate;
         this.title = title;
         this.genre = genre;
     }
 
-    public int getBookId() {
-        return bookId;
-    }
-
-    public void setBookId(int bookId) {
-        this.bookId = bookId;
-    }
-
-    public int isAvailability() {
-        return availability;
-    }
-
-    public void setAvailability(int availability) {
+    public void setAvailability(boolean availability) {
         this.availability = availability;
     }
 
@@ -55,7 +41,7 @@ public class Book {
         this.genre = genre;
     }
 
-    public int getAvailability(int availability){
+    public boolean getAvailability() {
         return availability;
     }
 }

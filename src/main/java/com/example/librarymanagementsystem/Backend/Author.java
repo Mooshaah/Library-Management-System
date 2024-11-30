@@ -1,20 +1,20 @@
 package com.example.librarymanagementsystem.Backend;
 
 public class Author {
-    private String authorName;
+    private String firstName;
     private String lastName;
 
-    public Author(String authorName, String lastName) {
-        this.authorName = authorName;
+    public Author(String firstName, String lastName) {
+        this.firstName = firstName;
         this.lastName = lastName;
     }
 
-    public String getAuthorName() {
-        return authorName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setAuthorName(String authorName) {
-        this.authorName = authorName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLastName() {

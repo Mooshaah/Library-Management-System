@@ -5,11 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MemberDOA {
+public class MemberDAO {
     private DBConnector dbConnector;
     private Member member;
 
-    public MemberDOA() {
+    public MemberDAO() {
         dbConnector = new DBConnector();
     }
 
@@ -18,8 +18,8 @@ public class MemberDOA {
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
             if (!checkMemberEmail(member.getEmail())) {
-                statement.setString(1, member.getFname());
-                statement.setString(2, member.getLname());
+                statement.setString(1, member.getFirstName());
+                statement.setString(2, member.getLastName());
                 statement.setString(3, member.getPhoneNumber());
                 statement.setString(4, member.getEmail());
                 statement.setString(5, member.getPassword());
@@ -39,8 +39,8 @@ public class MemberDOA {
         String query = "UPDATE member SET FirstName = ?, LastName = ?, PhoneNumber = ?, Email = ?, Password=?, Type = ?, Department = ? WHERE MemberID = ?";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, member.getFname());
-            statement.setString(2, member.getLname());
+            statement.setString(1, member.getFirstName());
+            statement.setString(2, member.getLastName());
             statement.setString(3, member.getPhoneNumber());
             statement.setString(4, member.getEmail());
             statement.setString(5, member.getPassword());
@@ -56,7 +56,6 @@ public class MemberDOA {
     }
 
     public void getMemberById(int id) {
-
         String query = "SELECT * FROM member WHERE MemberID= ?";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -113,13 +112,8 @@ public class MemberDOA {
             while (emailResult.next() && passResult.next()) {
                 int eCount = emailResult.getInt("Ecount");
                 int pCount = passResult.getInt("Pcount");
-                if (eCount > 0 && pCount > 0) {
-                    System.out.println("Email and password matches !");
-                    return true;
-                } else {
-                    System.out.println("Email or password does not match !");
-                    return false;
-                }
+                if (eCount > 0 && pCount > 0) return true;
+                return false;
             }
 
         } catch (SQLException e) {
