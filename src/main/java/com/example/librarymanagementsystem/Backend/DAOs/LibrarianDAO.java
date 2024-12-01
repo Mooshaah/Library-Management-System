@@ -1,6 +1,12 @@
-package com.example.librarymanagementsystem.Backend;
+package com.example.librarymanagementsystem.Backend.DAOs;
+
+import com.example.librarymanagementsystem.Backend.DBConnector;
+import com.example.librarymanagementsystem.Backend.Models.Author;
+import com.example.librarymanagementsystem.Backend.Models.Book;
+import com.example.librarymanagementsystem.Backend.Models.Librarian;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class LibrarianDAO {
     private final DBConnector dbConnector;
@@ -67,6 +73,20 @@ public class LibrarianDAO {
         return false;
     }
 
+    public String getLibrarianFirstNameByEmail(String email) {
+        String query = "SELECT FirstName FROM librarian WHERE Email = ?";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("FirstName");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public void getLibrarianByID(int id) {
         String query = "SELECT * FROM librarian WHERE LibrarianID= ?";
@@ -87,47 +107,85 @@ public class LibrarianDAO {
         }
     }
 
-    public void addBook(Book book, Author author) {
+    public void addBook(Book book, int authorId) {
         String bookQuery = "INSERT INTO book(Title, Genre, PublicationDate, Availability) VALUES (?, ?, ?, ?)";
-        String findAuthorQuery = "SELECT AuthorID FROM author WHERE FirstName = ? AND LastName = ?";
-        String authorQuery = "INSERT INTO author(FirstName, LastName) VALUES (?, ?)";
         String bookAuthorQuery = "INSERT INTO book_author(BookID, AuthorID) VALUES (?, ?)";
 
         try (Connection connection = dbConnector.connect();
              PreparedStatement bookStatement = connection.prepareStatement(bookQuery, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement findAuthorStatement = connection.prepareStatement(findAuthorQuery);
-             PreparedStatement authorStatement = connection.prepareStatement(authorQuery, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement bookAuthorStatement = connection.prepareStatement(bookAuthorQuery)) {
 
             // Insert book into the book table
-            int bookId = insertBook(bookStatement, book);
+            bookStatement.setString(1, book.getTitle());
+            bookStatement.setString(2, book.getGenre());
+            bookStatement.setDate(3, Date.valueOf(book.getPublicationDate()));
+            bookStatement.setBoolean(4, book.getAvailability());
+            bookStatement.executeUpdate();
 
-            // Check if the author already exists or insert a new one
-            int authorId = findOrInsertAuthor(findAuthorStatement, authorStatement, author);
+            // Retrieve the generated book ID
+            int bookId;
+            try (ResultSet bookGeneratedKeys = bookStatement.getGeneratedKeys()) {
+                if (bookGeneratedKeys.next()) {
+                    bookId = bookGeneratedKeys.getInt(1);
+                } else {
+                    throw new SQLException("Failed to retrieve the generated BookID.");
+                }
+            }
 
             // Link book and author
             bookAuthorStatement.setInt(1, bookId);
             bookAuthorStatement.setInt(2, authorId);
             bookAuthorStatement.executeUpdate();
 
-            System.out.println("Book added successfully with BookID: " + bookId + " and linked to AuthorID: " + authorId);
+            System.out.println("Book added successfully with BookID: " + bookId + " linked to AuthorID: " + authorId);
 
         } catch (SQLException e) {
+            System.err.println("Failed to add book: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public void addAuthor(Author author) {
+        String query = "INSERT INTO author (FirstName, LastName) VALUES (?, ?)";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            // Set parameters for the query
+            statement.setString(1, author.getFirstName());
+            statement.setString(2, author.getLastName());
+
+            // Execute the insert query
+            statement.executeUpdate();
+            System.out.println("Author added successfully: " + author.getFirstName() + " " + author.getLastName());
+
+        } catch (SQLException e) {
+            System.err.println("Failed to add author: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     public void deleteBook(int bookId) {
-        String query = "DELETE FROM book WHERE BookID = ?";
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, bookId);
-            int ra = statement.executeUpdate();
-            if (ra > 0) {
-                System.out.println("Book with ID " + bookId + " has been deleted");
-            } else {
-                System.out.println("No book with such ID!");
+        String deleteAuthorRelationQuery = "DELETE FROM book_author WHERE BookID = ?";
+        String deleteBookQuery = "DELETE FROM book WHERE BookID = ?";
+
+        try (Connection connection = dbConnector.connect()) {
+            // Delete references in book_author table
+            try (PreparedStatement deleteAuthorRelationStmt = connection.prepareStatement(deleteAuthorRelationQuery)) {
+                deleteAuthorRelationStmt.setInt(1, bookId);
+                deleteAuthorRelationStmt.executeUpdate();
             }
+
+            // Delete book from book table
+            try (PreparedStatement deleteBookStmt = connection.prepareStatement(deleteBookQuery)) {
+                deleteBookStmt.setInt(1, bookId);
+                int rowsAffected = deleteBookStmt.executeUpdate();
+                if (rowsAffected > 0) {
+                    System.out.println("Book with ID " + bookId + " has been deleted.");
+                } else {
+                    System.out.println("No book with such ID exists.");
+                }
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -243,46 +301,26 @@ public class LibrarianDAO {
         }
     }
 
+    public ArrayList<Author> getAllAuthors() {
+        ArrayList<Author> authors = new ArrayList<>();
+        String query = "SELECT AuthorID, FirstName, LastName FROM author";
 
-    private int findOrInsertAuthor(PreparedStatement findAuthorStatement, PreparedStatement authorStatement, Author author) throws SQLException {
-        // Check if the author already exists
-        findAuthorStatement.setString(1, author.getFirstName());
-        findAuthorStatement.setString(2, author.getLastName());
-        try (ResultSet resultSet = findAuthorStatement.executeQuery()) {
-            if (resultSet.next()) {
-                // Author exists, return AuthorID
-                return resultSet.getInt("AuthorID");
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                int authorID = resultSet.getInt("AuthorID");
+                String firstName = resultSet.getString("FirstName");
+                String lastName = resultSet.getString("LastName");
+                authors.add(new Author(authorID, firstName, lastName));
             }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-        // Author does not exist, insert and retrieve generated AuthorID
-        authorStatement.setString(1, author.getFirstName());
-        authorStatement.setString(2, author.getLastName());
-        authorStatement.executeUpdate();
-
-        try (ResultSet authorGeneratedKeys = authorStatement.getGeneratedKeys()) {
-            if (authorGeneratedKeys.next()) {
-                return authorGeneratedKeys.getInt(1);
-            } else {
-                throw new SQLException("Failed to retrieve the generated AuthorID.");
-            }
-        }
-    }
-
-    private int insertBook(PreparedStatement bookStatement, Book book) throws SQLException {
-        bookStatement.setString(1, book.getTitle());
-        bookStatement.setString(2, book.getGenre());
-        bookStatement.setDate(3, Date.valueOf(book.getPublicationDate()));
-        bookStatement.setBoolean(4, book.getAvailability());
-        bookStatement.executeUpdate();
-
-        try (ResultSet bookGeneratedKeys = bookStatement.getGeneratedKeys()) {
-            if (bookGeneratedKeys.next()) {
-                return bookGeneratedKeys.getInt(1);
-            } else {
-                throw new SQLException("Failed to retrieve the generated BookID.");
-            }
-        }
+        return authors;
     }
 
     public int getLibrarianIDByName(String FirstName, String LastName) {
@@ -302,7 +340,7 @@ public class LibrarianDAO {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        return -1; // a return that means no librarian found
+        return -1;
 
     }
 
@@ -329,7 +367,6 @@ public class LibrarianDAO {
 
     }
 
-
     public String[] getAuthorById(int id) {
         String query = "SELECT AuthorID, FirstName, LastName FROM author WHERE AuthorID= ?";
         try (Connection connection = dbConnector.connect();
@@ -340,11 +377,44 @@ public class LibrarianDAO {
                 int AuthorID = result.getInt("AuthorID");
                 String authorFname = result.getString("FirstName");
                 String authorLname = result.getString("LastName");
-                return new String[] {authorFname, authorLname};
+                return new String[]{authorFname, authorLname};
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    public ArrayList<Book> getAllBooks() {
+        ArrayList<Book> books = new ArrayList<>();
+        String query = "SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName " +
+                "FROM book b " +
+                "JOIN book_author ba ON b.BookID = ba.BookID " +
+                "JOIN author a ON ba.AuthorID = a.AuthorID";
+
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("BookID");
+                String title = resultSet.getString("Title");
+                String genre = resultSet.getString("Genre");
+                String pubDate = resultSet.getString("PublicationDate");
+                boolean availability = resultSet.getBoolean("Availability");
+
+                int authorID = resultSet.getInt("AuthorID");
+                String authorFirstName = resultSet.getString("FirstName");
+                String authorLastName = resultSet.getString("LastName");
+                Author author = new Author(authorID, authorFirstName, authorLastName);
+
+                books.add(new Book(id, pubDate, title, genre, author, availability));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return books;
     }
 }

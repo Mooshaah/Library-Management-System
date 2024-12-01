@@ -1,6 +1,7 @@
-package com.example.librarymanagementsystem.Backend;
+package com.example.librarymanagementsystem.Backend.Models;
 
 public class Member {
+    private int id;
     private String firstName, lastName;
     private String phoneNumber;
     private String email;
@@ -8,7 +9,8 @@ public class Member {
     private String department;
     private String password;
 
-    public Member(String Fname, String lastName, String phoneNumber, String email, String password, String type, String department) {
+    public Member(int id, String Fname, String lastName, String phoneNumber, String email, String password, String type, String department) {
+        this.id = id;
         this.firstName = Fname;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
@@ -18,40 +20,20 @@ public class Member {
         this.department = department;
     }
 
-    public void setFirstName(String fname) {
-        firstName = fname;
-    }
-
     public String getFirstName() {
         return firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getType() {
@@ -62,12 +44,12 @@ public class Member {
         return department;
     }
 
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
     public String getPassword() {
         return password;
+    }
+
+    public int getId() {
+        return id;
     }
 
 }

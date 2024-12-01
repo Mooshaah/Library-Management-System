@@ -1,13 +1,15 @@
-package com.example.librarymanagementsystem.Backend;
+package com.example.librarymanagementsystem.Backend.Models;
 
 import java.util.Date;
 
 public class BorrowRecord {
+    private int id;
     private Date orrowDate;
     private Date dueDate;
     private Date returnDate;
 
-    public BorrowRecord(Date orrowDate, Date dueDate, Date returnDate) {
+    public BorrowRecord(int id, Date orrowDate, Date dueDate, Date returnDate) {
+        this.id = id;
         this.orrowDate = orrowDate;
         this.dueDate = dueDate;
         this.returnDate = returnDate;
@@ -17,23 +19,15 @@ public class BorrowRecord {
         return orrowDate;
     }
 
-    public void setOrrowDate(Date orrowDate) {
-        this.orrowDate = orrowDate;
-    }
-
     public Date getDueDate() {
         return dueDate;
-    }
-
-    public void setDueDate(Date dueDate) {
-        this.dueDate = dueDate;
     }
 
     public Date getReturnDate() {
         return returnDate;
     }
 
-    public void setReturnDate(Date returnDate) {
-        this.returnDate = returnDate;
+    public int getId() {
+        return id;
     }
 }

@@ -1,16 +1,13 @@
 package com.example.librarymanagementsystem.javaFX;
 
-import com.example.librarymanagementsystem.Backend.LibrarianDAO;
-import com.example.librarymanagementsystem.Backend.MemberDAO;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
+import com.example.librarymanagementsystem.Backend.DAOs.MemberDAO;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-
-import static com.example.librarymanagementsystem.javaFX.UIComponents.*;
 
 public class LoginPage {
     private final Stage stage;
@@ -24,24 +21,47 @@ public class LoginPage {
     }
 
     public void show() {
-        Label heading = createLabel("Login as " + userType, 20);
-        TextField emailField = createTextField("Email", 250);
-        PasswordField passwordField = createPasswordField("Password", 250);
-        Label statusLabel = createLabel("", 14);
+        Label heading = new Label("Login as " + userType);
+        heading.setStyle("-fx-font-size: 20px;");
 
-        Button loginButton = createButton("Login", e -> handleLogin(emailField.getText(), passwordField.getText(), statusLabel));
-        Button backButton = createButton("Back", e -> new LandingPage(stage).show());
+        TextField emailField = new TextField();
+        emailField.setPromptText("Email");
+        emailField.setMaxWidth(250);
 
-        VBox layout = createVBox(10, heading, emailField, passwordField, loginButton, statusLabel);
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Password");
+        passwordField.setMaxWidth(250);
+
+        Label statusLabel = new Label();
+        statusLabel.setStyle("-fx-font-size: 14px;");
+
+        Button loginButton = new Button("Login");
+        loginButton.setOnAction(e -> handleLogin(emailField.getText(), passwordField.getText(), statusLabel));
+
+        Button backButton = new Button("Back");
+        backButton.setOnAction(e -> new LandingPage(stage).show());
+
+        VBox layout = new VBox(10);
+        layout.setAlignment(Pos.CENTER);
+        layout.getChildren().addAll(heading, emailField, passwordField, loginButton, statusLabel);
 
         if (LibraryApp.MEMBER.equals(userType)) {
-            Label signupPrompt = createLabel("Don't have an account?", 12);
-            Button signupButton = createTextButton("Sign up now!", e -> new SignUpPage(stage).show());
+            Label signupPrompt = new Label("Don't have an account?");
+            signupPrompt.setStyle("-fx-font-size: 12px;");
+
+            Button signupButton = new Button("Sign up now!");
+            signupButton.setStyle("-fx-text-fill: blue; -fx-underline: true; -fx-background-color: transparent;");
+            signupButton.setOnAction(e -> new SignUpPage(stage).show());
+
             layout.getChildren().addAll(signupPrompt, signupButton);
         }
 
         layout.getChildren().add(backButton);
-        setScene(stage, layout, userType + " Login");
+
+        Scene scene = new Scene(layout, 400, 300);
+        stage.setScene(scene);
+        stage.setTitle(userType + " Login");
+        stage.show();
     }
 
     private void handleLogin(String email, String password, Label statusLabel) {
@@ -52,10 +72,18 @@ public class LoginPage {
         }
 
         boolean isAuthenticated;
+        String userName = null;
+
         if (LibraryApp.MEMBER.equals(userType)) {
             isAuthenticated = memberDAO.checkMemberEmailAndPassword(email, password);
+            if (isAuthenticated) {
+                userName = memberDAO.getMemberFirstNameByEmail(email);
+            }
         } else {
             isAuthenticated = librarianDAO.checkLibrarianEmailAndPassword(email, password);
+            if (isAuthenticated) {
+                userName = librarianDAO.getLibrarianFirstNameByEmail(email);
+            }
         }
 
         if (!isAuthenticated) {
@@ -68,9 +96,9 @@ public class LoginPage {
         statusLabel.setText("Login successful!");
 
         if (LibraryApp.MEMBER.equals(userType)) {
-            new DashboardPage(stage, LibraryApp.MEMBER).show();
+            new DashboardPage(stage, LibraryApp.MEMBER, userName).show();
         } else {
-            new DashboardPage(stage, LibraryApp.LIBRARIAN).show();
+            new DashboardPage(stage, LibraryApp.LIBRARIAN, userName).show();
         }
     }
 }

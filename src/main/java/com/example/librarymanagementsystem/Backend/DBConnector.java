@@ -1,8 +1,15 @@
 package com.example.librarymanagementsystem.Backend;
 
+import com.example.librarymanagementsystem.Backend.DAOs.BorrowRecordDAO;
+import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
+import com.example.librarymanagementsystem.Backend.Models.Author;
+import com.example.librarymanagementsystem.Backend.Models.Book;
+import com.example.librarymanagementsystem.Backend.Models.Member;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 //import java.sql.
 
 public class DBConnector {
@@ -15,42 +22,17 @@ public class DBConnector {
 
 
     public static void main(String[] args) throws SQLException {
-
-        // second statement to be executed
-        MemberDAO member = new MemberDAO();
-        Member memberDummy = new Member("Mohamed", "Elshaarawy", "01265775635", "anon@philo.com", "asd123", "Student", "CS");
-//        Member memberDummy2 = new Member("Mohamed", "edited", "01265775635", "mohamed@hotmail.com", "asd123", "Student", "CS");
-
-
-        // ------------- The commented out code is for testing purposes --------------- //
-//        member.CreateMember(memberDummy);
-//        member.CreateMember(memberDummy2);
-        // third statement to exec
-//        member.getMemberById(1);
-//        member.updateMember(memberDummy2,1);
-        //fourth statement to exec
-//        member.checkMemberEmail("mohamed@hotmail.com");
-        //Fifth statement to exec
-//        member.checkMemberEmailAndPassword("mohamed@hotmail.com", "asd123");
-
-//        member.DelteMember(2);
-        member.getMemberIDByName("Mohamed","Elshaarawy");
         LibrarianDAO librarian = new LibrarianDAO();
-//        Book book1 = new Book(true, "1970-11-19", "Ex", "Love");
-//        Book book2 = new Book(true, "1970-11-19", "Ex-part2", "Love");
-//        Book book3 = new Book(true, "1970-11-19", "Ex-part3", "Test");
-//        Book book4 = new Book(true, "1970-11-19", "test1", "Love");
-//        Book book5 = new Book(true, "1970-11-19", "test5", "Love");
-        Author author = new Author("William", "Shakespeare");
+        BorrowRecordDAO borrowRecord = new BorrowRecordDAO();
+        Author author = new Author(1, "Harper", "Lee");
+        Book book1 = new Book(8, "2024-12-04", "qwe", "ewq", author, true);
+        Book book2 = new Book(9, "2024-12-02", "newbook", "test", author, true);
+        Member member = new Member(1, "philo", "zaki", "01225164802", "philo@test.com", "123", "Student", "Computer Science");
+        ArrayList<Book> books = new ArrayList<>();
+        books.add(book1);
+        books.add(book2);
 
-//        librarian.deleteBook(8);
+        borrowRecord.borrowBook(member.getId(), books);
 
-//        librarian.addBook(book1, author);
-//        librarian.getBookByAuthor(author);
-//         librarian.getBookByGenre("asd");
-//         librarian.getLibrarianByID(1);
-//        librarian.getBookByTitle("Ex-part2");
-//        librarian.getBookIDByTitle("EX", author.getFirstName(), author.getLastName());
-//        librarian.getAuthorById(1);
     }
 }

@@ -1,4 +1,7 @@
-package com.example.librarymanagementsystem.Backend;
+package com.example.librarymanagementsystem.Backend.DAOs;
+
+import com.example.librarymanagementsystem.Backend.DBConnector;
+import com.example.librarymanagementsystem.Backend.Models.Member;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,13 +10,12 @@ import java.sql.SQLException;
 
 public class MemberDAO {
     private DBConnector dbConnector;
-    private Member member;
 
     public MemberDAO() {
         dbConnector = new DBConnector();
     }
 
-    public void CreateMember(Member member) {
+    public boolean createMember(Member member) {
         String query = "INSERT INTO member (FirstName, LastName, PhoneNumber, Email, Password, Type, Department) VALUES (?,?,?,?,?,?,?)";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -26,13 +28,13 @@ public class MemberDAO {
                 statement.setString(6, member.getType());
                 statement.setString(7, member.getDepartment());
                 statement.executeUpdate();
-            } else {
-                System.out.println("Email Already Exists");
+                return true;
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     public void updateMember(Member member, int memberId) {
@@ -76,6 +78,22 @@ public class MemberDAO {
             throw new RuntimeException(e);
         }
     }
+
+    public String getMemberFirstNameByEmail(String email) {
+        String query = "SELECT FirstName FROM member WHERE Email = ?";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("FirstName");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public Boolean checkMemberEmail(String email) {
         String query = "SELECT Count(*) AS count FROM member WHERE Email = ?";
@@ -122,7 +140,7 @@ public class MemberDAO {
         return false;
     }
 
-    public void DelteMember(int memberId) {
+    public void deleteMember(int memberId) {
         String query = "DELETE FROM member WHERE MemberID = ?";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -150,12 +168,12 @@ public class MemberDAO {
                 System.out.println("Member ID: " + memberID);
                 return memberID;
             }
-        } catch(
+        } catch (
                 SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        return-1; // a special return that means no member found
+        return -1;
     }
 
 }

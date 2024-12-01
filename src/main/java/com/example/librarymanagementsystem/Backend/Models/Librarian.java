@@ -1,7 +1,6 @@
-package com.example.librarymanagementsystem.Backend;
+package com.example.librarymanagementsystem.Backend.Models;
 
 public class Librarian {
-
     private String FirstName;
     private String LastName;
     private String phoneNumber;
@@ -47,6 +46,7 @@ public class Librarian {
     public String getEmail() {
         return email;
     }
+
     public String getPassword() {
         return password;
     }
