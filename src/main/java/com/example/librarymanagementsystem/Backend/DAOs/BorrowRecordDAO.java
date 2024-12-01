@@ -61,6 +61,20 @@ public class BorrowRecordDAO {
 
     }
 
+    public void ReturnBook(int memberID, ArrayList<Book> books) {
+        String updateBookAvailablility = "UPDATE book SET availability = true WHERE BookID = ?";
+        String updateBookRecord = "UPDATE borrowing_record SET (ReturnDate) WHERE MemberID = ? VALUES (?,?)";
+        LocalDate borrowDate = LocalDate.now();
+        try(Connection connection = dbConnector.connect();
+        PreparedStatement bookAvailabilitystatement = connection.prepareStatement(updateBookAvailablility);
+        PreparedStatement updateBookRecordstatement = connection.prepareStatement(updateBookRecord);) {
+
+        } catch (SQLException e ){
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+
 //    public void borrowBook2(Member member, Librarian librarian, ArrayList<Book> books, Date returnDate, Date dueDate) {
 //        String updateBookQuery = "UPDATE book SET availability = false WHERE BookID = ?";
 //        String bookQuery = "SELECT Title FROM book WHERE Title= ?";

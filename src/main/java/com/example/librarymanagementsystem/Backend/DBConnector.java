@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public class DBConnector {
     public Connection connect() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/libraryManagementSystem";
+            String url = "jdbc:mysql://localhost:3306/libraryManagementSystem";
         String user = "root";
         String password = "";
         return DriverManager.getConnection(url, user, password);
