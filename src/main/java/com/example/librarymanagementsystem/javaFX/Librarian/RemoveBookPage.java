@@ -2,6 +2,7 @@ package com.example.librarymanagementsystem.javaFX.Librarian;
 
 import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
+import com.example.librarymanagementsystem.Backend.Models.User;
 import com.example.librarymanagementsystem.javaFX.DashboardPage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,13 +19,12 @@ import java.util.List;
 public class RemoveBookPage {
     private final Stage stage;
     private final LibrarianDAO librarianDAO;
-    private final String librarianName;
+    private final User user;
 
-
-    public RemoveBookPage(Stage stage, String librarianName) {
+    public RemoveBookPage(Stage stage, User user) {
         this.stage = stage;
         this.librarianDAO = new LibrarianDAO();
-        this.librarianName = librarianName;
+        this.user = user;
     }
 
     public void show() {
@@ -50,7 +50,8 @@ public class RemoveBookPage {
                 data.getValue().getAvailability() ? "Available" : "Not Available"));
 
         TableColumn<Book, String> authorColumn = new TableColumn<>("Author");
-        authorColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor().getFirstName() + " " + data.getValue().getAuthor().getLastName()));
+        authorColumn.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getAuthor().getFirstName() + " " + data.getValue().getAuthor().getLastName()));
 
         bookTable.getColumns().addAll(titleColumn, genreColumn, availabilityColumn, authorColumn);
 
@@ -63,14 +64,12 @@ public class RemoveBookPage {
         TextField searchField = new TextField();
         searchField.setPromptText("Search by Title");
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            // Create a filtered list manually
             ObservableList<Book> filteredBooks = FXCollections.observableArrayList();
             for (Book book : books) {
                 if (book.getTitle().toLowerCase().contains(newValue.toLowerCase())) {
                     filteredBooks.add(book);
                 }
             }
-            // Update the TableView with the filtered list
             bookTable.setItems(filteredBooks);
         });
 
@@ -96,7 +95,7 @@ public class RemoveBookPage {
 
         // Back button
         Button backButton = new Button("Back");
-        backButton.setOnAction(event -> new DashboardPage(stage, "Librarian", librarianName).show());
+        backButton.setOnAction(event -> new LibrarianDashboardPage(stage, user).show());
 
         layout.getChildren().addAll(searchField, bookTable, removeButton, statusLabel, backButton);
 

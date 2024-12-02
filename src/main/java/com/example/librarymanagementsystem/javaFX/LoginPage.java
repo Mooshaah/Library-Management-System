@@ -2,6 +2,9 @@ package com.example.librarymanagementsystem.javaFX;
 
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
 import com.example.librarymanagementsystem.Backend.DAOs.MemberDAO;
+import com.example.librarymanagementsystem.Backend.Models.Librarian;
+import com.example.librarymanagementsystem.Backend.Models.Member;
+import com.example.librarymanagementsystem.Backend.Models.User;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -71,22 +74,22 @@ public class LoginPage {
             return;
         }
 
-        boolean isAuthenticated;
-        String userName = null;
+        boolean isAuthenticated = false;
+        User authenticatedUser = null;
 
         if (LibraryApp.MEMBER.equals(userType)) {
             isAuthenticated = memberDAO.checkMemberEmailAndPassword(email, password);
             if (isAuthenticated) {
-                userName = memberDAO.getMemberFirstNameByEmail(email);
+                authenticatedUser = memberDAO.getMemberByEmail(email); // Retrieves Member object from DAO
             }
-        } else {
+        } else if (LibraryApp.LIBRARIAN.equals(userType)) {
             isAuthenticated = librarianDAO.checkLibrarianEmailAndPassword(email, password);
             if (isAuthenticated) {
-                userName = librarianDAO.getLibrarianFirstNameByEmail(email);
+                authenticatedUser = librarianDAO.getLibrarianByEmail(email); // Retrieves Librarian object from DAO
             }
         }
 
-        if (!isAuthenticated) {
+        if (!isAuthenticated || authenticatedUser == null) {
             statusLabel.setTextFill(Color.RED);
             statusLabel.setText("Invalid email or password.");
             return;
@@ -95,10 +98,6 @@ public class LoginPage {
         statusLabel.setTextFill(Color.GREEN);
         statusLabel.setText("Login successful!");
 
-        if (LibraryApp.MEMBER.equals(userType)) {
-            new DashboardPage(stage, LibraryApp.MEMBER, userName).show();
-        } else {
-            new DashboardPage(stage, LibraryApp.LIBRARIAN, userName).show();
-        }
+        new DashboardPage(stage, userType, authenticatedUser).show(); // Pass the authenticated user to DashboardPage
     }
 }

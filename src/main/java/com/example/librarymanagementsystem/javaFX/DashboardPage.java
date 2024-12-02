@@ -1,8 +1,10 @@
 package com.example.librarymanagementsystem.javaFX;
 
+import com.example.librarymanagementsystem.Backend.Models.User;
 import com.example.librarymanagementsystem.javaFX.Librarian.AddBookPage;
 import com.example.librarymanagementsystem.javaFX.Librarian.RemoveBookPage;
-import com.example.librarymanagementsystem.javaFX.Member.ViewBooksPage;
+import com.example.librarymanagementsystem.javaFX.Member.BorrowBookPage;
+import com.example.librarymanagementsystem.javaFX.Member.ReturnBookPage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -15,17 +17,17 @@ import javafx.stage.Stage;
 public class DashboardPage {
     private final Stage stage;
     private final String userType;
-    private final String userName;
+    private final User user;
 
-    public DashboardPage(Stage stage, String userType, String userName) {
+    public DashboardPage(Stage stage, String userType, User user) {
         this.stage = stage;
         this.userType = userType;
-        this.userName = userName;
+        this.user = user;
     }
 
     public void show() {
         // Create a label for the greeting
-        Label greetingLabel = new Label("Hello, " + userName + "!");
+        Label greetingLabel = new Label("Hello, " + user.getFirstName() + "!");
         greetingLabel.setStyle("-fx-font-size: 20px; -fx-padding: 10px;");
 
         // Create a grid layout for buttons
@@ -61,23 +63,28 @@ public class DashboardPage {
             // Librarian-specific buttons
             Button addBookButton = new Button("Add Book");
             Button removeBookButton = new Button("Remove Book");
+            Button viewBooksButton = new Button("View Books"); // Added View Books button
             Button removeMemberButton = new Button("Remove Member");
             Button viewReportsButton = new Button("View Reports");
+
             addBookButton.setPrefSize(120, 40);
             removeBookButton.setPrefSize(120, 40);
+            viewBooksButton.setPrefSize(120, 40);
             removeMemberButton.setPrefSize(120, 40);
             viewReportsButton.setPrefSize(120, 40);
 
             addBookButton.setOnAction(e -> addBook());
             removeBookButton.setOnAction(e -> removeBook());
+            viewBooksButton.setOnAction(e -> viewBooks()); // Set action for View Books button
             removeMemberButton.setOnAction(e -> removeMember());
             viewReportsButton.setOnAction(e -> viewReports());
 
             // Arrange buttons in the grid
             buttonGrid.add(addBookButton, 0, 0);
             buttonGrid.add(removeBookButton, 1, 0);
-            buttonGrid.add(removeMemberButton, 0, 1);
-            buttonGrid.add(viewReportsButton, 1, 1);
+            buttonGrid.add(viewBooksButton, 0, 1); // Position the View Books button
+            buttonGrid.add(removeMemberButton, 1, 1);
+            buttonGrid.add(viewReportsButton, 0, 2);
         }
 
         // Create a BorderPane layout
@@ -95,11 +102,11 @@ public class DashboardPage {
 
     // Placeholder methods for button actions
     private void viewBooks() {
-        new ViewBooksPage(stage, userName).show();
+        new ViewBooksPage(stage, user, userType).show();
     }
 
     private void borrowBooks() {
-        System.out.println("Borrow Books button clicked.");
+        new BorrowBookPage(stage, user).show();
     }
 
     private void payFine() {
@@ -107,15 +114,15 @@ public class DashboardPage {
     }
 
     private void returnBook() {
-        System.out.println("Return Book button clicked.");
+        new ReturnBookPage(stage, user).show();
     }
 
     private void addBook() {
-        new AddBookPage(stage, userName).show();
+        new AddBookPage(stage, user).show();
     }
 
     private void removeBook() {
-        new RemoveBookPage(stage, userName).show();
+        new RemoveBookPage(stage, user).show();
     }
 
     private void removeMember() {

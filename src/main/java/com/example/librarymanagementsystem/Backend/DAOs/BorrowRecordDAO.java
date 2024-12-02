@@ -1,11 +1,14 @@
 package com.example.librarymanagementsystem.Backend.DAOs;
 
 import com.example.librarymanagementsystem.Backend.DBConnector;
+import com.example.librarymanagementsystem.Backend.Models.Author;
 import com.example.librarymanagementsystem.Backend.Models.Book;
+import com.example.librarymanagementsystem.Backend.Models.Member;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.List;
 
 public class BorrowRecordDAO {
     DBConnector dbConnector;
@@ -25,11 +28,9 @@ public class BorrowRecordDAO {
         LocalDate borrowDate = LocalDate.now();
         LocalDate dueDate = borrowDate.plusDays(7);
 
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        try (Connection connection = dbConnector.connect(); PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
              PreparedStatement bookAvailabilityStmt = connection.prepareStatement(updateBookAvailability);
-             PreparedStatement bookRecordStmt = connection.prepareStatement(linkBookRecord)
-        ) {
+             PreparedStatement bookRecordStmt = connection.prepareStatement(linkBookRecord)) {
             statement.setDate(1, Date.valueOf(borrowDate));
             statement.setDate(2, Date.valueOf(dueDate));
             statement.setInt(3, memberID);
@@ -61,82 +62,67 @@ public class BorrowRecordDAO {
 
     }
 
-    public void ReturnBook(int memberID, ArrayList<Book> books) {
-        String updateBookAvailablility = "UPDATE book SET availability = true WHERE BookID = ?";
-        String updateBookRecord = "UPDATE borrowing_record SET (ReturnDate) WHERE MemberID = ? VALUES (?,?)";
-        LocalDate borrowDate = LocalDate.now();
-        try(Connection connection = dbConnector.connect();
-        PreparedStatement bookAvailabilitystatement = connection.prepareStatement(updateBookAvailablility);
-        PreparedStatement updateBookRecordstatement = connection.prepareStatement(updateBookRecord);) {
+    public void returnBook(Member member, ArrayList<Book> books) {
+        String updateBookAvailability = "UPDATE book SET availability = true WHERE BookID = ?";
+        String updateBookRecord = "UPDATE borrowing_record br " +
+                "JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID " +
+                "SET br.ReturnDate = ? WHERE br.MemberID = ? AND bbr.BookID = ?";
+        LocalDate returnDate = LocalDate.now();
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement updateBookRecordStatement = connection.prepareStatement(updateBookRecord);
+             PreparedStatement bookAvailabilityStatement = connection.prepareStatement(updateBookAvailability)) {
 
-        } catch (SQLException e ){
+
+            for (Book book : books) {
+                updateBookRecordStatement.setDate(1, Date.valueOf(returnDate));
+                updateBookRecordStatement.setInt(2, member.getId());
+                updateBookRecordStatement.setInt(3, book.getId());
+                updateBookRecordStatement.executeUpdate();
+
+                bookAvailabilityStatement.setInt(1, book.getId());
+                bookAvailabilityStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException();
         }
     }
 
-//    public void borrowBook2(Member member, Librarian librarian, ArrayList<Book> books, Date returnDate, Date dueDate) {
-//        String updateBookQuery = "UPDATE book SET availability = false WHERE BookID = ?";
-//        String bookQuery = "SELECT Title FROM book WHERE Title= ?";
-//        String insertRecordQuery = "INSERT INTO borrow_record (BorrowDate, ReturnDate, DueDate, LibrarianID, MemberID) VALUES (?, ?, ?, ?, ?)";
-//        String memberQuery = "SELECT FirstName, LastName FROM member WHERE  FirstName = ?, LastName= ?";
-//        String bookBorrowingRecord = "INSERT INTO book_borrowing_record (BookID, RecordID) VALUES (?, ?)";
-//        String BookIDQuery = "SELECT BookID FROM book_borrowing_record WHERE RecordID = ?";
-//        try (Connection connection = dbConnector.connect();
-//             PreparedStatement updateBookStatement = connection.prepareStatement(updateBookQuery);
-//             PreparedStatement memberStatement = connection.prepareStatement(memberQuery);
-//             PreparedStatement insertRecordStatement = connection.prepareStatement(insertRecordQuery, Statement.RETURN_GENERATED_KEYS);
-//             PreparedStatement insertBookBorrowingRecordStatement = connection.prepareStatement(insertRecordQuery);
-//             PreparedStatement bookStatement = connection.prepareStatement(bookQuery);
-//             PreparedStatement bookIDStatement = connection.prepareStatement(bookQuery)) {
-//
-//
-//            insertRecordStatement.setDate(1, Date.valueOf(currnetDate));
-//            insertRecordStatement.setDate(2, returnDate);
-//            insertRecordStatement.setDate(3, dueDate);
-//
-//            int librarianID = librarianDAO.getLibrarianIDByName(librarian.getFirstName(), librarian.getLastName());
-//            int memberID = memberDAO.getMemberIDByName(member.getFirstName(), member.getLastName());
-//            if (librarianID != -1) {
-//                insertRecordStatement.setInt(4, librarianDAO.getLibrarianIDByName(librarian.getFirstName(), librarian.getLastName()));
-//            }
-//
-//            if (memberID != -1) {
-//                insertRecordStatement.setInt(5, memberDAO.getMemberIDByName(member.getFirstName(), member.getLastName()));
-//            }
-//
-//            int recordID;
-//            try (ResultSet recordGeneratedKeys = insertRecordStatement.getGeneratedKeys()) {
-//                if (recordGeneratedKeys.next()) {
-//                    recordID = recordGeneratedKeys.getInt(1);
-//                } else {
-//                    throw new SQLException("Failed to retrieve the generated BookID.");
-//                }
-//            }
-//
-//            ResultSet rs = bookIDStatement.executeQuery();
-//            int bookID = -1;
-//            boolean flag = false;
-//            while (rs.next()) {
-//                flag = true;
-//                bookID = rs.getInt("BookID");
-//            }
-//
-//            for (Book book : books) {
-//                insertBookBorrowingRecordStatement.setInt(1, bookID);
-//                insertBookBorrowingRecordStatement.setInt(2, recordID);
-//            }
-//
-//            insertRecordStatement.executeUpdate();
-//            ResultSet updateBookRs = bookStatement.executeQuery();
-//            ResultSet memberRs = memberStatement.executeQuery();
-//            ResultSet insertBookRs = insertRecordStatement.executeQuery();
-//
-//
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            throw new RuntimeException();
-//        }
-//    }
+    public ArrayList<Book> getBorrowedBooksByMemberId(int memberId) {
+        ArrayList<Book> borrowedBooks = new ArrayList<>();
+        String query = "SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName " +
+                "FROM book b " +
+                "JOIN book_author ba ON b.BookID = ba.BookID " +
+                "JOIN author a ON ba.AuthorID = a.AuthorID " +
+                "JOIN book_borrowing_record bbr ON b.BookID = bbr.BookID " +
+                "JOIN borrowing_record br ON bbr.RecordID = br.RecordID " +
+                "WHERE br.MemberID = ? AND br.ReturnDate IS NULL";
+
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, memberId);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                int bookId = resultSet.getInt("BookID");
+                String title = resultSet.getString("Title");
+                String genre = resultSet.getString("Genre");
+                String publicationDate = resultSet.getString("PublicationDate");
+                boolean availability = resultSet.getBoolean("Availability");
+
+                int authorId = resultSet.getInt("AuthorID");
+                String authorFirstName = resultSet.getString("FirstName");
+                String authorLastName = resultSet.getString("LastName");
+
+                Author author = new Author(authorId, authorFirstName, authorLastName);
+                borrowedBooks.add(new Book(bookId, publicationDate, title, genre, author, availability));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return borrowedBooks;
+    }
 }
 

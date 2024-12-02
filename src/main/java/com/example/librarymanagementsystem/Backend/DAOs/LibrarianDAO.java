@@ -7,6 +7,7 @@ import com.example.librarymanagementsystem.Backend.Models.Librarian;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class LibrarianDAO {
     private final DBConnector dbConnector;
@@ -165,17 +166,24 @@ public class LibrarianDAO {
     }
 
     public void deleteBook(int bookId) {
+        String deleteBorrowingRecordQuery = "DELETE FROM book_borrowing_record WHERE BookID = ?";
         String deleteAuthorRelationQuery = "DELETE FROM book_author WHERE BookID = ?";
         String deleteBookQuery = "DELETE FROM book WHERE BookID = ?";
 
         try (Connection connection = dbConnector.connect()) {
+            // Delete references in book_borrowing_record table
+            try (PreparedStatement deleteBorrowingRecordStmt = connection.prepareStatement(deleteBorrowingRecordQuery)) {
+                deleteBorrowingRecordStmt.setInt(1, bookId);
+                deleteBorrowingRecordStmt.executeUpdate();
+            }
+
             // Delete references in book_author table
             try (PreparedStatement deleteAuthorRelationStmt = connection.prepareStatement(deleteAuthorRelationQuery)) {
                 deleteAuthorRelationStmt.setInt(1, bookId);
                 deleteAuthorRelationStmt.executeUpdate();
             }
 
-            // Delete book from book table
+            // Delete the book from the book table
             try (PreparedStatement deleteBookStmt = connection.prepareStatement(deleteBookQuery)) {
                 deleteBookStmt.setInt(1, bookId);
                 int rowsAffected = deleteBookStmt.executeUpdate();
@@ -185,7 +193,6 @@ public class LibrarianDAO {
                     System.out.println("No book with such ID exists.");
                 }
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -416,5 +423,64 @@ public class LibrarianDAO {
         }
 
         return books;
+    }
+
+    public ArrayList<Book> getAvailableBooks() {
+        ArrayList<Book> books = new ArrayList<>();
+        String query = "SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName " +
+                "FROM book b " +
+                "JOIN book_author ba ON b.BookID = ba.BookID " +
+                "JOIN author a ON ba.AuthorID = a.AuthorID " +
+                "WHERE b.Availability = true";
+
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("BookID");
+                String title = resultSet.getString("Title");
+                String genre = resultSet.getString("Genre");
+                String pubDate = resultSet.getString("PublicationDate");
+                boolean availability = resultSet.getBoolean("Availability");
+
+                int authorID = resultSet.getInt("AuthorID");
+                String authorFirstName = resultSet.getString("FirstName");
+                String authorLastName = resultSet.getString("LastName");
+                Author author = new Author(authorID, authorFirstName, authorLastName);
+
+                books.add(new Book(id, pubDate, title, genre, author, availability));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return books;
+    }
+
+    public Librarian getLibrarianByEmail(String email) {
+        String query = "SELECT * FROM librarian WHERE email = ?";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return new Librarian(
+                        resultSet.getInt("LibrarianID"),
+                        resultSet.getString("firstName"),
+                        resultSet.getString("lastName"),
+                        resultSet.getString("phoneNumber"),
+                        resultSet.getString("email"),
+                        resultSet.getString("password")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Return null if no librarian is found
     }
 }

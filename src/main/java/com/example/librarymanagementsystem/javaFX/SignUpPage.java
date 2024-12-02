@@ -129,7 +129,7 @@ public class SignUpPage {
         if (isCreated) {
             statusLabel.setText("Sign-up successful!");
             statusLabel.setTextFill(Color.GREEN);
-            new DashboardPage(stage, LibraryApp.MEMBER, firstName).show(); // Pass the user's first name
+            new DashboardPage(stage, LibraryApp.MEMBER, newMember).show(); // Pass the Member object to DashboardPage
         } else {
             statusLabel.setText("Sign-up failed. Email may already be in use.");
             statusLabel.setTextFill(Color.RED);

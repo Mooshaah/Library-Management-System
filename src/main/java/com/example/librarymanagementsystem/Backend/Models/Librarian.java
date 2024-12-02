@@ -1,53 +1,48 @@
 package com.example.librarymanagementsystem.Backend.Models;
 
-public class Librarian {
-    private String FirstName;
-    private String LastName;
+public class Librarian implements User {
+    private int id;
+    private String firstName;
+    private String lastName;
     private String phoneNumber;
     private String email;
     private String password;
 
-    public Librarian(String FirstName, String LastName, String phoneNumber, String email, String password) {
-        this.FirstName = FirstName;
-        this.LastName = LastName;
+    public Librarian(int id, String firstName, String lastName, String phoneNumber, String email, String password) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.password = password;
     }
 
-    public void setFirstName(String firstName) {
-        FirstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        LastName = lastName;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
+    @Override
     public String getFirstName() {
-        return FirstName;
+        return firstName;
     }
 
+    @Override
     public String getLastName() {
-        return LastName;
+        return lastName;
     }
 
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
+    @Override
     public String getEmail() {
         return email;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
+
+    public int getId() {
+        return id;
+    }
+
 }

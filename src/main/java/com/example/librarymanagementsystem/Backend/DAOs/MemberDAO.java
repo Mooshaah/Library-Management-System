@@ -2,6 +2,7 @@ package com.example.librarymanagementsystem.Backend.DAOs;
 
 import com.example.librarymanagementsystem.Backend.DBConnector;
 import com.example.librarymanagementsystem.Backend.Models.Member;
+import com.example.librarymanagementsystem.Backend.Models.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -176,5 +177,30 @@ public class MemberDAO {
         return -1;
     }
 
-}
+    public Member getMemberByEmail(String email) {
+        String query = "SELECT * FROM member WHERE email = ?";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, email);
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                return new Member(
+                        resultSet.getInt("MemberID"),
+                        resultSet.getString("firstName"),
+                        resultSet.getString("lastName"),
+                        resultSet.getString("phoneNumber"),
+                        resultSet.getString("email"),
+                        resultSet.getString("password"),
+                        resultSet.getString("type"),
+                        resultSet.getString("department")
+                );
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Return null if no member is found
+    }}
 

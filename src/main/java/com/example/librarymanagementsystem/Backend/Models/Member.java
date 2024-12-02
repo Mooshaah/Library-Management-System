@@ -1,17 +1,18 @@
 package com.example.librarymanagementsystem.Backend.Models;
 
-public class Member {
+public class Member implements User {
     private int id;
-    private String firstName, lastName;
+    private String firstName;
+    private String lastName;
     private String phoneNumber;
     private String email;
+    private String password;
     private String type;
     private String department;
-    private String password;
 
-    public Member(int id, String Fname, String lastName, String phoneNumber, String email, String password, String type, String department) {
+    public Member(int id, String firstName, String lastName, String phoneNumber, String email, String password, String type, String department) {
         this.id = id;
-        this.firstName = Fname;
+        this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.email = email;
@@ -20,10 +21,12 @@ public class Member {
         this.department = department;
     }
 
+    @Override
     public String getFirstName() {
         return firstName;
     }
 
+    @Override
     public String getLastName() {
         return lastName;
     }
@@ -32,8 +35,18 @@ public class Member {
         return phoneNumber;
     }
 
+    @Override
     public String getEmail() {
         return email;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getType() {
@@ -43,13 +56,4 @@ public class Member {
     public String getDepartment() {
         return department;
     }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public int getId() {
-        return id;
-    }
-
 }

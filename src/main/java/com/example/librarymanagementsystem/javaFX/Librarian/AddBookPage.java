@@ -3,6 +3,7 @@ package com.example.librarymanagementsystem.javaFX.Librarian;
 import com.example.librarymanagementsystem.Backend.Models.Author;
 import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
+import com.example.librarymanagementsystem.Backend.Models.User;
 import com.example.librarymanagementsystem.javaFX.DashboardPage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,12 +18,12 @@ import java.util.ArrayList;
 public class AddBookPage {
     private final Stage stage;
     private final LibrarianDAO librarianDAO;
-    private final String librarianName;
+    private final User user;
 
-    public AddBookPage(Stage stage, String librarianName) {
+    public AddBookPage(Stage stage, User user) {
         this.stage = stage;
         this.librarianDAO = new LibrarianDAO();
-        this.librarianName = librarianName;
+        this.user = user;
     }
 
     public void show() {
@@ -100,7 +101,7 @@ public class AddBookPage {
 
         // Back Button
         Button backButton = new Button("Back");
-        backButton.setOnAction(e -> new DashboardPage(stage, "Librarian", librarianName).show());
+        backButton.setOnAction(e -> new LibrarianDashboardPage(stage, user).show());
         grid.add(backButton, 0, 5);
 
         Scene scene = new Scene(grid, 500, 500);
