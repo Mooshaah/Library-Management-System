@@ -68,7 +68,8 @@ public class BorrowRecordDAO {
         try(Connection connection = dbConnector.connect();
         PreparedStatement bookAvailabilitystatement = connection.prepareStatement(updateBookAvailablility);
         PreparedStatement updateBookRecordstatement = connection.prepareStatement(updateBookRecord);) {
-
+            bookAvailabilitystatement.setInt(1, memberID);
+            
         } catch (SQLException e ){
             e.printStackTrace();
             throw new RuntimeException();
