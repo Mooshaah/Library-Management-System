@@ -2,7 +2,6 @@ package com.example.librarymanagementsystem.Backend.DAOs;
 
 import com.example.librarymanagementsystem.Backend.DBConnector;
 import com.example.librarymanagementsystem.Backend.Models.Member;
-import com.example.librarymanagementsystem.Backend.Models.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

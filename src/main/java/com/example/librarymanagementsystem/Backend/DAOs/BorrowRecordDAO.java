@@ -124,5 +124,20 @@ public class BorrowRecordDAO {
 
         return borrowedBooks;
     }
+
+    public void calculateFine(int memberID){
+        String query = "SELECT ReturnDate,DueDate WHERE MemberID =?";
+        try(Connection connection = dbConnector.connect();
+        PreparedStatement statement = connection.prepareStatement(query)){
+            statement.setInt(1, memberID);
+        //** Compare the Return date > Due date  and if this condition is true set a fine of 5% on the member
+            // w ya philo seeb el function di ana hakhalasha 3la el dohr keda kamil enta f haga tanya w zabat el db schema
+            // zawed column lel total price ashan law fi fine ne apply it 3ala el total price **//
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
 }
 
