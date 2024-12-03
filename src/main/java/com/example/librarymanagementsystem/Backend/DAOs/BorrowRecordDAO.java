@@ -8,7 +8,6 @@ import com.example.librarymanagementsystem.Backend.Models.Member;
 import java.sql.*;
 import java.util.ArrayList;
 import java.time.LocalDate;
-import java.util.List;
 
 public class BorrowRecordDAO {
     DBConnector dbConnector;
@@ -20,6 +19,7 @@ public class BorrowRecordDAO {
         books = new ArrayList<>();
         memberDAO = new MemberDAO();
     }
+
 
     public void borrowBook(int memberID, ArrayList<Book> books) {
         String query = "INSERT INTO borrowing_record (BorrowDate, DueDate, MemberID) VALUES (?, ?, ?)";
@@ -125,14 +125,28 @@ public class BorrowRecordDAO {
         return borrowedBooks;
     }
 
-    public void calculateFine(int memberID){
-        String query = "SELECT ReturnDate,DueDate WHERE MemberID =?";
-        try(Connection connection = dbConnector.connect();
-        PreparedStatement statement = connection.prepareStatement(query)){
+
+    public void calculateFine(int memberID) {
+        String query = "SELECT ReturnDate,DueDate FROM borrowing_record WHERE MemberID =?";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, memberID);
-        //** Compare the Return date > Due date  and if this condition is true set a fine of 5% on the member
+            //** Compare the Return date > Due date  and if this condition is true set a fine of 5% on the member
             // w ya philo seeb el function di ana hakhalasha 3la el dohr keda kamil enta f haga tanya w zabat el db schema
             // zawed column lel total price ashan law fi fine ne apply it 3ala el total price **//
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                Date reDate = rs.getDate("ReturnDate");
+                Date dDate = rs.getDate("DueDate");
+
+                if (reDate.before(dDate)) {
+                    System.out.println("no fine applied");
+                } else if (reDate.after(dDate)) {
+                    System.out.println("Return date exceeded the due date a fine of 50 will be applied");
+
+                }
+                //** Fadel el logic el bei apply el fine ye get added ba3d ma nezabat el db schema**//
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e);

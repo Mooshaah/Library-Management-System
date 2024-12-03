@@ -4,6 +4,7 @@ import com.example.librarymanagementsystem.Backend.DAOs.BorrowRecordDAO;
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
 import com.example.librarymanagementsystem.Backend.Models.Author;
 import com.example.librarymanagementsystem.Backend.Models.Book;
+import com.example.librarymanagementsystem.Backend.Models.BorrowRecord;
 import com.example.librarymanagementsystem.Backend.Models.Member;
 
 import java.sql.Connection;
@@ -28,11 +29,13 @@ public class DBConnector {
         Book book1 = new Book(8, "2024-12-04", "qwe", "ewq", author, true);
         Book book2 = new Book(9, "2024-12-02", "newbook", "test", author, true);
         Member member = new Member(1, "philo", "zaki", "01225164802", "philo@test.com", "123", "Student", "Computer Science");
-        ArrayList<Book> books = new ArrayList<>();
-        books.add(book1);
-        books.add(book2);
-
-        borrowRecord.borrowBook(member.getId(), books);
+//        ArrayList<Book> books = new ArrayList<>();
+//        books.add(book1);
+//        books.add(book2);
+//
+//        borrowRecord.borrowBook(member.getId(), books);
+        BorrowRecordDAO book = new BorrowRecordDAO();
+        book.calculateFine(1);
 
     }
 }
