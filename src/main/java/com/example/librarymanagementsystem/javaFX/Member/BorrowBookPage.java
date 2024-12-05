@@ -54,9 +54,10 @@ public class BorrowBookPage {
         ObservableList<Book> bookList = FXCollections.observableArrayList(availableBooks);
         bookTable.setItems(bookList);
 
-        Button borrowButton = getBorrowButton(bookTable, bookList);
+        // Set selection mode to SINGLE
+        bookTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-        bookTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        Button borrowButton = getBorrowButton(bookTable, bookList);
 
         Button backButton = new Button("Back");
         backButton.setOnAction(event -> new MemberDashboardPage(stage, user).show());
@@ -69,18 +70,19 @@ public class BorrowBookPage {
     }
 
     private Button getBorrowButton(TableView<Book> bookTable, ObservableList<Book> bookList) {
-        Button borrowButton = new Button("Borrow Selected Books");
+        Button borrowButton = new Button("Borrow Selected Book");
         borrowButton.setOnAction(event -> {
-            ObservableList<Book> selectedBooks = bookTable.getSelectionModel().getSelectedItems();
-            if (selectedBooks.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "No Books Selected", "Please select at least one book to borrow.");
+            Book selectedBook = bookTable.getSelectionModel().getSelectedItem();
+            if (selectedBook == null) {
+                showAlert(Alert.AlertType.ERROR, "No Book Selected", "Please select a book to borrow.");
                 return;
             }
-            ArrayList<Book> booksToBorrow = new ArrayList<>(selectedBooks);
-            borrowRecordDAO.borrowBook(user.getId(), booksToBorrow);
-            bookList.removeAll(selectedBooks);
+
+            // Borrow the selected book
+            borrowRecordDAO.borrowBook(user.getId(), selectedBook);
+            bookList.remove(selectedBook);
             bookTable.setItems(FXCollections.observableArrayList(bookList));
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Books borrowed successfully!");
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Book borrowed successfully!");
         });
         return borrowButton;
     }

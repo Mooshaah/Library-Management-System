@@ -49,7 +49,7 @@ public class MemberDashboardPage {
         viewBooksButton.setOnAction(e -> new ViewBooksPage(stage, user).show());
         borrowBooksButton.setOnAction(e -> new BorrowBookPage(stage, user).show());
         viewBorrowedBooksButton.setOnAction(e -> new ViewBorrowedBooksPage(stage, user).show());
-        payFineButton.setOnAction(e -> System.out.println("Pay Fine button clicked."));
+        payFineButton.setOnAction(e -> new PayFinesPage(stage, user).show());
         returnBookButton.setOnAction(e -> new ReturnBookPage(stage, user).show());
 
         // Add buttons to GridPane

@@ -6,34 +6,40 @@ import com.example.librarymanagementsystem.Backend.Models.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BorrowRecordDAO {
     DBConnector dbConnector;
     ArrayList<Book> books;
     MemberDAO memberDAO;
+    FineDAO fineDAO;
 
     public BorrowRecordDAO() {
         dbConnector = new DBConnector();
         books = new ArrayList<>();
         memberDAO = new MemberDAO();
+        fineDAO = new FineDAO();
     }
 
-    public void borrowBook(int memberID, ArrayList<Book> books) {
+    public void borrowBook(int memberID, Book book) {
         String query = "INSERT INTO borrowing_record (BorrowDate, DueDate, MemberID) VALUES (?, ?, ?)";
         String updateBookAvailability = "UPDATE book SET availability = false WHERE BookID = ?";
-        String linkBookRecord = "INSERT INTO book_borrowing_record(BookID, RecordID) VALUES (?, ?)";
+        String linkBookRecord = "INSERT INTO book_borrowing_record (BookID, RecordID) VALUES (?, ?)";
         LocalDate borrowDate = LocalDate.now();
         LocalDate dueDate = borrowDate.plusDays(7);
 
-        try (Connection connection = dbConnector.connect(); PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS); PreparedStatement bookAvailabilityStmt = connection.prepareStatement(updateBookAvailability); PreparedStatement bookRecordStmt = connection.prepareStatement(linkBookRecord)) {
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement bookAvailabilityStmt = connection.prepareStatement(updateBookAvailability);
+             PreparedStatement bookRecordStmt = connection.prepareStatement(linkBookRecord)) {
+
+            // Insert new borrow record
             statement.setDate(1, Date.valueOf(borrowDate));
             statement.setDate(2, Date.valueOf(dueDate));
             statement.setInt(3, memberID);
             statement.executeUpdate();
 
+            // Retrieve the generated RecordID
             int recordID;
             try (ResultSet recordGeneratedKeys = statement.getGeneratedKeys()) {
                 if (recordGeneratedKeys.next()) {
@@ -43,26 +49,29 @@ public class BorrowRecordDAO {
                 }
             }
 
-            // iterate over books and set availability to false;
-            for (Book book : books) {
-                bookAvailabilityStmt.setInt(1, book.getId());
-                bookAvailabilityStmt.executeUpdate();
+            // Update book availability to false
+            bookAvailabilityStmt.setInt(1, book.getId());
+            bookAvailabilityStmt.executeUpdate();
 
-                bookRecordStmt.setInt(1, book.getId());
-                bookRecordStmt.setInt(2, recordID);
-                bookRecordStmt.executeUpdate();
-            }
+            // Link book to borrow record
+            bookRecordStmt.setInt(1, book.getId());
+            bookRecordStmt.setInt(2, recordID);
+            bookRecordStmt.executeUpdate();
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException();
+            throw new RuntimeException("Error while borrowing a book", e);
         }
-
     }
 
     public void returnBook(Member member, ArrayList<Book> books) {
         String updateBookAvailability = "UPDATE book SET availability = true WHERE BookID = ?";
-        String updateBookRecord = "UPDATE borrowing_record br " + "JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID " + "SET br.ReturnDate = ? WHERE br.MemberID = ? AND bbr.BookID = ?";
+        String updateBookRecord = """
+                UPDATE borrowing_record br
+                JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
+                SET br.ReturnDate = ?
+                WHERE br.MemberID = ? AND bbr.BookID = ?
+                """;
         LocalDate returnDate = LocalDate.now();
 
 
@@ -76,6 +85,7 @@ public class BorrowRecordDAO {
                 bookAvailabilityStatement.setInt(1, book.getId());
                 bookAvailabilityStatement.executeUpdate();
 
+                fineDAO.calculateFine(member.getId());
 
                 System.out.println("Book with title {" + book.getTitle() + "} has been returned.");
                 System.out.println("Member has to pay $" + member.getPaymentDue() + " as fine.");
@@ -116,81 +126,18 @@ public class BorrowRecordDAO {
         return borrowedBooks;
     }
 
-    public void calculateFine(int memberID) {
-        Member member = memberDAO.getMemberById(memberID);
-        String selectRecordQuery = "SELECT RecordID,BorrowDate,ReturnDate,DueDate FROM borrowing_record WHERE MemberID =?";
-        String selectFineQuery = "SELECT * FROM fine WHERE MemberID = ?";
-        String updateFineQuery = "UPDATE fine SET amount = ? WHERE MemberID = ?";
-        String insertFineQuery = "INSERT INTO fine (Amount, isPaid, MemberID) VALUES (?,?,?)";
-        String updateMemberQuery = "UPDATE member SET PaymentDue = ? WHERE MemberID = ?";
-
-        try (Connection connection = dbConnector.connect(); PreparedStatement selectRecord = connection.prepareStatement(selectRecordQuery); PreparedStatement selectFine = connection.prepareStatement(selectFineQuery); PreparedStatement insertFine = connection.prepareStatement(insertFineQuery); PreparedStatement updateMember = connection.prepareStatement(updateMemberQuery); PreparedStatement updateFine = connection.prepareStatement(updateFineQuery)) {
-
-            selectRecord.setInt(1, memberID);
-            ResultSet resultSet = selectRecord.executeQuery();
-
-            while (resultSet.next()) {
-                int recordID = resultSet.getInt("RecordID");
-                Date borrowDate = resultSet.getDate("BorrowDate");
-                Date returnDate = resultSet.getDate("ReturnDate");
-                Date dueDate = resultSet.getDate("DueDate");
-                BorrowRecord borrowRecord = new BorrowRecord(recordID, borrowDate, dueDate);
-                int overdueDays = borrowRecord.calculateOverdueDays(returnDate);
-
-                if (overdueDays != 0) {
-                    double amount = getAmount(overdueDays);
-
-                    selectFine.setInt(1, memberID);
-                    ResultSet fineResultSet = selectFine.executeQuery();
-
-                    if (fineResultSet.next()) {
-                        double currentAmount = fineResultSet.getDouble("Amount");
-                        double updatedAmount = currentAmount + amount;
-                        updateFine.setDouble(1, updatedAmount);
-                        updateFine.setInt(2, memberID);
-                        updateFine.executeUpdate();
-                        System.out.println("Updated fine for MemberID: " + memberID + " to $" + updatedAmount);
-                    } else {
-                        insertFine.setDouble(1, amount);
-                        insertFine.setBoolean(2, false);
-                        insertFine.setInt(3, memberID);
-                        insertFine.executeUpdate();
-                        System.out.println("Inserted fine for MemberID: " + memberID + " with amount $" + amount);
-                    }
-
-                    member.addFine(amount);
-                    updateMember.setDouble(1, member.getPaymentDue());
-                    updateMember.setInt(2, memberID);
-                    updateMember.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static double getAmount(int overdueDays) {
-        double baseAmount = 10;
-        if (overdueDays == 1) {
-            return baseAmount;
-        } else {
-            return baseAmount + (baseAmount * 0.1 * (overdueDays - 1));
-        }
-    }
-
     public List<BorrowRecord> getBorrowedRecordsByMemberId(int memberId) {
-        Map<Integer, BorrowRecord> recordMap = new HashMap<>();
+        List<BorrowRecord> borrowRecords = new ArrayList<>();
         String query = """
-            SELECT br.RecordID, br.BorrowDate, br.DueDate, b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
-                   a.AuthorID, a.FirstName AS AuthorFirstName, a.LastName AS AuthorLastName
-            FROM borrowing_record br
-            JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
-            JOIN book b ON bbr.BookID = b.BookID
-            JOIN book_author ba ON b.BookID = ba.BookID
-            JOIN author a ON ba.AuthorID = a.AuthorID
-            WHERE br.MemberID = ? AND br.ReturnDate IS NULL
-            """;
+                SELECT br.RecordID, br.BorrowDate, br.DueDate, b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
+                       a.AuthorID, a.FirstName AS AuthorFirstName, a.LastName AS AuthorLastName
+                FROM borrowing_record br
+                JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
+                JOIN book b ON bbr.BookID = b.BookID
+                JOIN book_author ba ON b.BookID = ba.BookID
+                JOIN author a ON ba.AuthorID = a.AuthorID
+                WHERE br.MemberID = ? AND br.ReturnDate IS NULL
+                """;
 
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -202,13 +149,6 @@ public class BorrowRecordDAO {
                     int recordId = resultSet.getInt("RecordID");
                     Date borrowDate = resultSet.getDate("BorrowDate");
                     Date dueDate = resultSet.getDate("DueDate");
-
-                    // Check if the BorrowRecord already exists in the map
-                    BorrowRecord borrowRecord = recordMap.get(recordId);
-                    if (borrowRecord == null) {
-                        borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate);
-                        recordMap.put(recordId, borrowRecord);
-                    }
 
                     // Fetch book details
                     int bookId = resultSet.getInt("BookID");
@@ -226,8 +166,9 @@ public class BorrowRecordDAO {
                     // Create book object
                     Book book = new Book(bookId, publicationDate, title, genre, author, availability);
 
-                    // Add the book to the BorrowRecord
-                    borrowRecord.addBook(book);
+                    // Create BorrowRecord
+                    BorrowRecord borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate, book);
+                    borrowRecords.add(borrowRecord);
                 }
             }
         } catch (SQLException e) {
@@ -235,7 +176,6 @@ public class BorrowRecordDAO {
             throw new RuntimeException("Error fetching borrowed records for member ID: " + memberId, e);
         }
 
-        return new ArrayList<>(recordMap.values());
+        return borrowRecords;
     }
-
 }

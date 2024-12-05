@@ -15,7 +15,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,20 +66,27 @@ public class ViewBorrowedBooksPage {
                     new SimpleDateFormat("yyyy-MM-dd").format(record.getDueDate()) : "");
         });
 
+        TableColumn<Book, String> overdueColumn = new TableColumn<>("Overdue Days");
+        overdueColumn.setCellValueFactory(data -> {
+            BorrowRecord record = bookRecordMap.get(data.getValue());
+            record.calculateOverdueDays(record.getReturnDate());
+            return new SimpleStringProperty(record != null ?
+                    String.valueOf(record.getOverdueDays()) : "0");
+        });
+
         // Add all columns to the table
-        bookTable.getColumns().addAll(titleColumn, authorColumn, genreColumn, borrowDateColumn, dueDateColumn);
+        bookTable.getColumns().addAll(titleColumn, authorColumn, genreColumn, borrowDateColumn, dueDateColumn, overdueColumn);
 
         // Fetch Borrow Records and populate bookRecordMap
         List<BorrowRecord> borrowedRecords = borrowRecordDAO.getBorrowedRecordsByMemberId(user.getId());
-        List<Book> allBooks = new ArrayList<>();
+        ObservableList<Book> bookList = FXCollections.observableArrayList();
+
         for (BorrowRecord record : borrowedRecords) {
-            for (Book book : record.getBooks()) {
-                allBooks.add(book);
-                bookRecordMap.put(book, record);
-            }
+            Book book = record.getBook();
+            bookRecordMap.put(book, record);
+            bookList.add(book);
         }
 
-        ObservableList<Book> bookList = FXCollections.observableArrayList(allBooks);
         bookTable.setItems(bookList);
 
         // Back Button
@@ -89,7 +95,7 @@ public class ViewBorrowedBooksPage {
 
         layout.getChildren().addAll(bookTable, backButton);
 
-        Scene scene = new Scene(layout, 700, 600);
+        Scene scene = new Scene(layout, 800, 600);
         stage.setScene(scene);
         stage.show();
     }

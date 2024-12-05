@@ -10,7 +10,9 @@ import com.example.librarymanagementsystem.Backend.Models.Member;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 //import java.sql.
 
 public class DBConnector {
@@ -23,20 +25,21 @@ public class DBConnector {
 
 
     public static void main(String[] args) throws SQLException {
+
         LibrarianDAO librarian = new LibrarianDAO();
         BorrowRecordDAO borrowRecord = new BorrowRecordDAO();
         Author author = new Author(1, "Harper", "Lee");
         Book book1 = new Book(22, "2024-12-05", "To Kill a Mockingbird", "Fiction", author, true);
-        Book book2 = new Book(23, "2024-12-24", "Pride and Prejudice", "Romance", author, true);
+//        Book book2 = new Book(23, "2024-12-24", "Pride and Prejudice", "Romance", author, true);
         Member member = new Member(3, "philo", "zaki", "01234567890", "philo", "123", "Student", "Computer Science", 0);
         ArrayList<Book> books = new ArrayList<>();
         books.add(book1);
-        books.add(book2);
-
+//        books.add(book2);
+        LocalDate testReturnDate = LocalDate.of(2024, 12, 14);
 
         BorrowRecordDAO recordDAO = new BorrowRecordDAO();
-//        recordDAO.borrowBook(member.getId(), books);
-//        recordDAO.returnBook(member, books);
+//        recordDAO.borrowBook(member.getId(), book1);
+//        recordDAO.returnBookTest(member, books, testReturnDate);
 //        recordDAO.calculateFine(member.getId());
     }
 }

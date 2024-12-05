@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +68,7 @@ public class ReturnBookPage {
             }
 
             ArrayList<Book> booksToReturn = new ArrayList<>(selectedBooks);
+            LocalDate testReturnDate = LocalDate.of(2024, 12, 14);
             borrowRecordDAO.returnBook((Member) user, booksToReturn);
 
             // Refresh the table view

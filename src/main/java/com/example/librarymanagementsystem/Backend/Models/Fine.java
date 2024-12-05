@@ -5,10 +5,10 @@ public class Fine {
     private double amount;
     private boolean isPaid;
 
-    public Fine(int id, double amount) {
+    public Fine(int id, double amount, boolean isPaid) {
         this.id = id;
         this.amount = amount;
-        this.isPaid = false;
+        this.isPaid = isPaid;
     }
 
     public int getId() {
@@ -21,5 +21,9 @@ public class Fine {
 
     public boolean isPaid() {
         return isPaid;
+    }
+
+    public void setPaid(boolean paid) {
+        isPaid = paid;
     }
 }
