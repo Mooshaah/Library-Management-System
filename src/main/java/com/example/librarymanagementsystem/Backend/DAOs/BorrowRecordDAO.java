@@ -6,6 +6,9 @@ import com.example.librarymanagementsystem.Backend.Models.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BorrowRecordDAO {
     DBConnector dbConnector;
@@ -64,8 +67,6 @@ public class BorrowRecordDAO {
 
 
         try (Connection connection = dbConnector.connect(); PreparedStatement updateBookRecordStatement = connection.prepareStatement(updateBookRecord); PreparedStatement bookAvailabilityStatement = connection.prepareStatement(updateBookAvailability)) {
-
-
             for (Book book : books) {
                 updateBookRecordStatement.setDate(1, Date.valueOf(returnDate));
                 updateBookRecordStatement.setInt(2, member.getId());
@@ -114,7 +115,6 @@ public class BorrowRecordDAO {
 
         return borrowedBooks;
     }
-
 
     public void calculateFine(int memberID) {
         Member member = memberDAO.getMemberById(memberID);
@@ -178,4 +178,64 @@ public class BorrowRecordDAO {
             return baseAmount + (baseAmount * 0.1 * (overdueDays - 1));
         }
     }
+
+    public List<BorrowRecord> getBorrowedRecordsByMemberId(int memberId) {
+        Map<Integer, BorrowRecord> recordMap = new HashMap<>();
+        String query = """
+            SELECT br.RecordID, br.BorrowDate, br.DueDate, b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
+                   a.AuthorID, a.FirstName AS AuthorFirstName, a.LastName AS AuthorLastName
+            FROM borrowing_record br
+            JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
+            JOIN book b ON bbr.BookID = b.BookID
+            JOIN book_author ba ON b.BookID = ba.BookID
+            JOIN author a ON ba.AuthorID = a.AuthorID
+            WHERE br.MemberID = ? AND br.ReturnDate IS NULL
+            """;
+
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, memberId);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    // Fetch borrow record details
+                    int recordId = resultSet.getInt("RecordID");
+                    Date borrowDate = resultSet.getDate("BorrowDate");
+                    Date dueDate = resultSet.getDate("DueDate");
+
+                    // Check if the BorrowRecord already exists in the map
+                    BorrowRecord borrowRecord = recordMap.get(recordId);
+                    if (borrowRecord == null) {
+                        borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate);
+                        recordMap.put(recordId, borrowRecord);
+                    }
+
+                    // Fetch book details
+                    int bookId = resultSet.getInt("BookID");
+                    String title = resultSet.getString("Title");
+                    String genre = resultSet.getString("Genre");
+                    String publicationDate = resultSet.getString("PublicationDate");
+                    boolean availability = resultSet.getBoolean("Availability");
+
+                    // Fetch author details
+                    int authorId = resultSet.getInt("AuthorID");
+                    String authorFirstName = resultSet.getString("AuthorFirstName");
+                    String authorLastName = resultSet.getString("AuthorLastName");
+                    Author author = new Author(authorId, authorFirstName, authorLastName);
+
+                    // Create book object
+                    Book book = new Book(bookId, publicationDate, title, genre, author, availability);
+
+                    // Add the book to the BorrowRecord
+                    borrowRecord.addBook(book);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error fetching borrowed records for member ID: " + memberId, e);
+        }
+
+        return new ArrayList<>(recordMap.values());
+    }
+
 }

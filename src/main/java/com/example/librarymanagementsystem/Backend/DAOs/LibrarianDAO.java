@@ -7,7 +7,6 @@ import com.example.librarymanagementsystem.Backend.Models.Librarian;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.List;
 
 public class LibrarianDAO {
     private final DBConnector dbConnector;

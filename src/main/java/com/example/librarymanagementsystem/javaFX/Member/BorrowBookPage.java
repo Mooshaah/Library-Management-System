@@ -54,6 +54,21 @@ public class BorrowBookPage {
         ObservableList<Book> bookList = FXCollections.observableArrayList(availableBooks);
         bookTable.setItems(bookList);
 
+        Button borrowButton = getBorrowButton(bookTable, bookList);
+
+        bookTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        Button backButton = new Button("Back");
+        backButton.setOnAction(event -> new MemberDashboardPage(stage, user).show());
+
+        layout.getChildren().addAll(bookTable, borrowButton, backButton);
+
+        Scene scene = new Scene(layout, 600, 550);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private Button getBorrowButton(TableView<Book> bookTable, ObservableList<Book> bookList) {
         Button borrowButton = new Button("Borrow Selected Books");
         borrowButton.setOnAction(event -> {
             ObservableList<Book> selectedBooks = bookTable.getSelectionModel().getSelectedItems();
@@ -67,17 +82,7 @@ public class BorrowBookPage {
             bookTable.setItems(FXCollections.observableArrayList(bookList));
             showAlert(Alert.AlertType.INFORMATION, "Success", "Books borrowed successfully!");
         });
-
-        bookTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
-        Button backButton = new Button("Back");
-        backButton.setOnAction(event -> new MemberDashboardPage(stage, user).show());
-
-        layout.getChildren().addAll(bookTable, borrowButton, backButton);
-
-        Scene scene = new Scene(layout, 600, 550);
-        stage.setScene(scene);
-        stage.show();
+        return borrowButton;
     }
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {

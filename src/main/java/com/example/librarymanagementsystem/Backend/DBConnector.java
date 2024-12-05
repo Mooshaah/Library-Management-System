@@ -37,6 +37,6 @@ public class DBConnector {
         BorrowRecordDAO recordDAO = new BorrowRecordDAO();
 //        recordDAO.borrowBook(member.getId(), books);
 //        recordDAO.returnBook(member, books);
-        recordDAO.calculateFine(member.getId());
+//        recordDAO.calculateFine(member.getId());
     }
 }

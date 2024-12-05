@@ -2,6 +2,7 @@ package com.example.librarymanagementsystem.javaFX;
 
 import com.example.librarymanagementsystem.Backend.DAOs.MemberDAO;
 import com.example.librarymanagementsystem.Backend.Models.Member;
+import com.example.librarymanagementsystem.javaFX.Member.MemberDashboardPage;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -129,7 +130,7 @@ public class SignUpPage {
         if (isCreated) {
             statusLabel.setText("Sign-up successful!");
             statusLabel.setTextFill(Color.GREEN);
-            new DashboardPage(stage, LibraryApp.MEMBER, newMember).show(); // Pass the Member object to DashboardPage
+            new MemberDashboardPage(stage, newMember).show(); // Pass the Member object to DashboardPage
         } else {
             statusLabel.setText("Sign-up failed. Email may already be in use.");
             statusLabel.setTextFill(Color.RED);

@@ -3,7 +3,6 @@ package com.example.librarymanagementsystem.javaFX.Librarian;
 import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
 import com.example.librarymanagementsystem.Backend.Models.User;
-import com.example.librarymanagementsystem.javaFX.DashboardPage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;

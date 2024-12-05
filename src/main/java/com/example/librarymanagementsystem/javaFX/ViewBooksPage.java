@@ -2,7 +2,10 @@ package com.example.librarymanagementsystem.javaFX;
 
 import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
+import com.example.librarymanagementsystem.Backend.Models.Librarian;
 import com.example.librarymanagementsystem.Backend.Models.User;
+import com.example.librarymanagementsystem.javaFX.Librarian.LibrarianDashboardPage;
+import com.example.librarymanagementsystem.javaFX.Member.MemberDashboardPage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,13 +22,11 @@ public class ViewBooksPage {
     private final Stage stage;
     private final LibrarianDAO librarianDAO;
     private final User user;
-    private final String userType;
 
-    public ViewBooksPage(Stage stage, User user, String userType) {
+    public ViewBooksPage(Stage stage, User user) {
         this.stage = stage;
         this.librarianDAO = new LibrarianDAO();
         this.user = user;
-        this.userType = userType;
     }
 
     public void show() {
@@ -71,7 +72,11 @@ public class ViewBooksPage {
         });
 
         Button backButton = new Button("Back");
-        backButton.setOnAction(event -> new DashboardPage(stage, userType, user).show());
+        if (user instanceof Librarian) {
+            backButton.setOnAction(event -> new LibrarianDashboardPage(stage, user).show());
+        }else {
+            backButton.setOnAction(event -> new MemberDashboardPage(stage, user).show());
+        }
 
         layout.getChildren().addAll(searchField, bookTable, backButton);
 

@@ -1,6 +1,8 @@
 package com.example.librarymanagementsystem.Backend.Models;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class BorrowRecord {
     private int id;
@@ -8,12 +10,14 @@ public class BorrowRecord {
     private Date dueDate;
     private Date returnDate;
     private int overdueDays;
+    private List<Book> books;
 
     public BorrowRecord(int id, Date borrowDate, Date dueDate) {
         this.id = id;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.overdueDays = 0;
+        this.books = new ArrayList<>();
     }
 
     public Date getBorrowDate() {
@@ -30,6 +34,17 @@ public class BorrowRecord {
 
     public int getId() {
         return id;
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void addBook(Book book) {
+        if (this.books == null) {
+            this.books = new ArrayList<>();
+        }
+        this.books.add(book);
     }
 
     public int calculateOverdueDays(Date returnDate) {

@@ -5,6 +5,8 @@ import com.example.librarymanagementsystem.Backend.DAOs.MemberDAO;
 import com.example.librarymanagementsystem.Backend.Models.Librarian;
 import com.example.librarymanagementsystem.Backend.Models.Member;
 import com.example.librarymanagementsystem.Backend.Models.User;
+import com.example.librarymanagementsystem.javaFX.Librarian.LibrarianDashboardPage;
+import com.example.librarymanagementsystem.javaFX.Member.MemberDashboardPage;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -98,6 +100,10 @@ public class LoginPage {
         statusLabel.setTextFill(Color.GREEN);
         statusLabel.setText("Login successful!");
 
-        new DashboardPage(stage, userType, authenticatedUser).show(); // Pass the authenticated user to DashboardPage
+        if (authenticatedUser instanceof Librarian) {
+            new LibrarianDashboardPage(stage, authenticatedUser).show();
+        } else {
+            new MemberDashboardPage(stage, authenticatedUser).show();
+        }
     }
 }

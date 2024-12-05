@@ -44,7 +44,7 @@ public class LibrarianDashboardPage {
 
         addBookButton.setOnAction(e -> new AddBookPage(stage, user).show());
         removeBookButton.setOnAction(e -> new RemoveBookPage(stage, user).show());
-        viewBooksButton.setOnAction(e -> new ViewBooksPage(stage, user, "Librarian").show());
+        viewBooksButton.setOnAction(e -> new ViewBooksPage(stage, user).show());
         removeMemberButton.setOnAction(e -> System.out.println("Remove Member button clicked."));
         viewReportsButton.setOnAction(e -> System.out.println("View Reports button clicked."));
 
