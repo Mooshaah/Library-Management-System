@@ -4,7 +4,6 @@ import com.example.librarymanagementsystem.Backend.DAOs.BorrowRecordDAO;
 import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.Models.Member;
 import com.example.librarymanagementsystem.Backend.Models.User;
-import com.example.librarymanagementsystem.javaFX.DashboardPage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

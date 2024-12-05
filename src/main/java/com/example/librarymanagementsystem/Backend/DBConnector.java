@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class DBConnector {
     public Connection connect() throws SQLException {
-            String url = "jdbc:mysql://localhost:3306/libraryManagementSystem";
+        String url = "jdbc:mysql://localhost:3306/libraryManagementSystem";
         String user = "root";
         String password = "";
         return DriverManager.getConnection(url, user, password);
@@ -26,16 +26,17 @@ public class DBConnector {
         LibrarianDAO librarian = new LibrarianDAO();
         BorrowRecordDAO borrowRecord = new BorrowRecordDAO();
         Author author = new Author(1, "Harper", "Lee");
-        Book book1 = new Book(8, "2024-12-04", "qwe", "ewq", author, true);
-        Book book2 = new Book(9, "2024-12-02", "newbook", "test", author, true);
-        Member member = new Member(1, "philo", "zaki", "01225164802", "philo@test.com", "123", "Student", "Computer Science");
-//        ArrayList<Book> books = new ArrayList<>();
-//        books.add(book1);
-//        books.add(book2);
-//
-//        borrowRecord.borrowBook(member.getId(), books);
-        BorrowRecordDAO book = new BorrowRecordDAO();
-        book.calculateFine(1);
+        Book book1 = new Book(22, "2024-12-05", "To Kill a Mockingbird", "Fiction", author, true);
+        Book book2 = new Book(23, "2024-12-24", "Pride and Prejudice", "Romance", author, true);
+        Member member = new Member(3, "philo", "zaki", "01234567890", "philo", "123", "Student", "Computer Science", 0);
+        ArrayList<Book> books = new ArrayList<>();
+        books.add(book1);
+        books.add(book2);
 
+
+        BorrowRecordDAO recordDAO = new BorrowRecordDAO();
+//        recordDAO.borrowBook(member.getId(), books);
+//        recordDAO.returnBook(member, books);
+        recordDAO.calculateFine(member.getId());
     }
 }

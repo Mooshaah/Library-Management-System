@@ -9,8 +9,9 @@ public class Member implements User {
     private String password;
     private String type;
     private String department;
+    private double paymentDue;
 
-    public Member(int id, String firstName, String lastName, String phoneNumber, String email, String password, String type, String department) {
+    public Member(int id, String firstName, String lastName, String phoneNumber, String email, String password, String type, String department, double paymentDue) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -19,6 +20,7 @@ public class Member implements User {
         this.password = password;
         this.type = type;
         this.department = department;
+        this.paymentDue = paymentDue;
     }
 
     @Override
@@ -55,5 +57,13 @@ public class Member implements User {
 
     public String getDepartment() {
         return department;
+    }
+
+    public double getPaymentDue() {
+        return paymentDue;
+    }
+
+    public void addFine(double amount) {
+        paymentDue += amount;
     }
 }

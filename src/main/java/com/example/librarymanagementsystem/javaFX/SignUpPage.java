@@ -123,7 +123,7 @@ public class SignUpPage {
             return;
         }
 
-        Member newMember = new Member(0, firstName, lastName, phone, email, password, type, department);
+        Member newMember = new Member(0, firstName, lastName, phone, email, password, type, department, 0);
         boolean isCreated = memberDAO.createMember(newMember);
 
         if (isCreated) {

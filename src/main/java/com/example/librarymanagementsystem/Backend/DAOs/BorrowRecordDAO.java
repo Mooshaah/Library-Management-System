@@ -1,9 +1,7 @@
 package com.example.librarymanagementsystem.Backend.DAOs;
 
 import com.example.librarymanagementsystem.Backend.DBConnector;
-import com.example.librarymanagementsystem.Backend.Models.Author;
-import com.example.librarymanagementsystem.Backend.Models.Book;
-import com.example.librarymanagementsystem.Backend.Models.Member;
+import com.example.librarymanagementsystem.Backend.Models.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,7 +18,6 @@ public class BorrowRecordDAO {
         memberDAO = new MemberDAO();
     }
 
-
     public void borrowBook(int memberID, ArrayList<Book> books) {
         String query = "INSERT INTO borrowing_record (BorrowDate, DueDate, MemberID) VALUES (?, ?, ?)";
         String updateBookAvailability = "UPDATE book SET availability = false WHERE BookID = ?";
@@ -28,9 +25,7 @@ public class BorrowRecordDAO {
         LocalDate borrowDate = LocalDate.now();
         LocalDate dueDate = borrowDate.plusDays(7);
 
-        try (Connection connection = dbConnector.connect(); PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement bookAvailabilityStmt = connection.prepareStatement(updateBookAvailability);
-             PreparedStatement bookRecordStmt = connection.prepareStatement(linkBookRecord)) {
+        try (Connection connection = dbConnector.connect(); PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS); PreparedStatement bookAvailabilityStmt = connection.prepareStatement(updateBookAvailability); PreparedStatement bookRecordStmt = connection.prepareStatement(linkBookRecord)) {
             statement.setDate(1, Date.valueOf(borrowDate));
             statement.setDate(2, Date.valueOf(dueDate));
             statement.setInt(3, memberID);
@@ -64,13 +59,11 @@ public class BorrowRecordDAO {
 
     public void returnBook(Member member, ArrayList<Book> books) {
         String updateBookAvailability = "UPDATE book SET availability = true WHERE BookID = ?";
-        String updateBookRecord = "UPDATE borrowing_record br " +
-                "JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID " +
-                "SET br.ReturnDate = ? WHERE br.MemberID = ? AND bbr.BookID = ?";
+        String updateBookRecord = "UPDATE borrowing_record br " + "JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID " + "SET br.ReturnDate = ? WHERE br.MemberID = ? AND bbr.BookID = ?";
         LocalDate returnDate = LocalDate.now();
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement updateBookRecordStatement = connection.prepareStatement(updateBookRecord);
-             PreparedStatement bookAvailabilityStatement = connection.prepareStatement(updateBookAvailability)) {
+
+
+        try (Connection connection = dbConnector.connect(); PreparedStatement updateBookRecordStatement = connection.prepareStatement(updateBookRecord); PreparedStatement bookAvailabilityStatement = connection.prepareStatement(updateBookAvailability)) {
 
 
             for (Book book : books) {
@@ -81,6 +74,10 @@ public class BorrowRecordDAO {
 
                 bookAvailabilityStatement.setInt(1, book.getId());
                 bookAvailabilityStatement.executeUpdate();
+
+
+                System.out.println("Book with title {" + book.getTitle() + "} has been returned.");
+                System.out.println("Member has to pay $" + member.getPaymentDue() + " as fine.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,16 +87,9 @@ public class BorrowRecordDAO {
 
     public ArrayList<Book> getBorrowedBooksByMemberId(int memberId) {
         ArrayList<Book> borrowedBooks = new ArrayList<>();
-        String query = "SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName " +
-                "FROM book b " +
-                "JOIN book_author ba ON b.BookID = ba.BookID " +
-                "JOIN author a ON ba.AuthorID = a.AuthorID " +
-                "JOIN book_borrowing_record bbr ON b.BookID = bbr.BookID " +
-                "JOIN borrowing_record br ON bbr.RecordID = br.RecordID " +
-                "WHERE br.MemberID = ? AND br.ReturnDate IS NULL";
+        String query = "SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName " + "FROM book b " + "JOIN book_author ba ON b.BookID = ba.BookID " + "JOIN author a ON ba.AuthorID = a.AuthorID " + "JOIN book_borrowing_record bbr ON b.BookID = bbr.BookID " + "JOIN borrowing_record br ON bbr.RecordID = br.RecordID " + "WHERE br.MemberID = ? AND br.ReturnDate IS NULL";
 
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        try (Connection connection = dbConnector.connect(); PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, memberId);
             ResultSet resultSet = statement.executeQuery();
 
@@ -127,25 +117,52 @@ public class BorrowRecordDAO {
 
 
     public void calculateFine(int memberID) {
-        String query = "SELECT ReturnDate,DueDate FROM borrowing_record WHERE MemberID =?";
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, memberID);
-            //** Compare the Return date > Due date  and if this condition is true set a fine of 5% on the member
-            // w ya philo seeb el function di ana hakhalasha 3la el dohr keda kamil enta f haga tanya w zabat el db schema
-            // zawed column lel total price ashan law fi fine ne apply it 3ala el total price **//
-            ResultSet rs = statement.executeQuery();
-            while (rs.next()) {
-                Date reDate = rs.getDate("ReturnDate");
-                Date dDate = rs.getDate("DueDate");
+        Member member = memberDAO.getMemberById(memberID);
+        String selectRecordQuery = "SELECT RecordID,BorrowDate,ReturnDate,DueDate FROM borrowing_record WHERE MemberID =?";
+        String selectFineQuery = "SELECT * FROM fine WHERE MemberID = ?";
+        String updateFineQuery = "UPDATE fine SET amount = ? WHERE MemberID = ?";
+        String insertFineQuery = "INSERT INTO fine (Amount, isPaid, MemberID) VALUES (?,?,?)";
+        String updateMemberQuery = "UPDATE member SET PaymentDue = ? WHERE MemberID = ?";
 
-                if (reDate.before(dDate)) {
-                    System.out.println("no fine applied");
-                } else if (reDate.after(dDate)) {
-                    System.out.println("Return date exceeded the due date a fine of 50 will be applied");
+        try (Connection connection = dbConnector.connect(); PreparedStatement selectRecord = connection.prepareStatement(selectRecordQuery); PreparedStatement selectFine = connection.prepareStatement(selectFineQuery); PreparedStatement insertFine = connection.prepareStatement(insertFineQuery); PreparedStatement updateMember = connection.prepareStatement(updateMemberQuery); PreparedStatement updateFine = connection.prepareStatement(updateFineQuery)) {
 
+            selectRecord.setInt(1, memberID);
+            ResultSet resultSet = selectRecord.executeQuery();
+
+            while (resultSet.next()) {
+                int recordID = resultSet.getInt("RecordID");
+                Date borrowDate = resultSet.getDate("BorrowDate");
+                Date returnDate = resultSet.getDate("ReturnDate");
+                Date dueDate = resultSet.getDate("DueDate");
+                BorrowRecord borrowRecord = new BorrowRecord(recordID, borrowDate, dueDate);
+                int overdueDays = borrowRecord.calculateOverdueDays(returnDate);
+
+                if (overdueDays != 0) {
+                    double amount = getAmount(overdueDays);
+
+                    selectFine.setInt(1, memberID);
+                    ResultSet fineResultSet = selectFine.executeQuery();
+
+                    if (fineResultSet.next()) {
+                        double currentAmount = fineResultSet.getDouble("Amount");
+                        double updatedAmount = currentAmount + amount;
+                        updateFine.setDouble(1, updatedAmount);
+                        updateFine.setInt(2, memberID);
+                        updateFine.executeUpdate();
+                        System.out.println("Updated fine for MemberID: " + memberID + " to $" + updatedAmount);
+                    } else {
+                        insertFine.setDouble(1, amount);
+                        insertFine.setBoolean(2, false);
+                        insertFine.setInt(3, memberID);
+                        insertFine.executeUpdate();
+                        System.out.println("Inserted fine for MemberID: " + memberID + " with amount $" + amount);
+                    }
+
+                    member.addFine(amount);
+                    updateMember.setDouble(1, member.getPaymentDue());
+                    updateMember.setInt(2, memberID);
+                    updateMember.executeUpdate();
                 }
-                //** Fadel el logic el bei apply el fine ye get added ba3d ma nezabat el db schema**//
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -153,5 +170,12 @@ public class BorrowRecordDAO {
         }
     }
 
+    private static double getAmount(int overdueDays) {
+        double baseAmount = 10;
+        if (overdueDays == 1) {
+            return baseAmount;
+        } else {
+            return baseAmount + (baseAmount * 0.1 * (overdueDays - 1));
+        }
+    }
 }
-

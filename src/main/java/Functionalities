@@ -5,7 +5,7 @@ Librarian:
     - Add Author ✅
 
  Member:
-    - View Books
+    - View Books ✅
     - Borrow Books ✅
         * Display Receipt Page
     - Return Books ✅

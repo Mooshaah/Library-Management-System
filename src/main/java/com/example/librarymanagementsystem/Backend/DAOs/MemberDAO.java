@@ -57,14 +57,14 @@ public class MemberDAO {
         }
     }
 
-    public void getMemberById(int id) {
+    public Member getMemberById(int id) {
         String query = "SELECT * FROM member WHERE MemberID= ?";
+        Member member = null;
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, id);
             ResultSet result = statement.executeQuery();
             while (result.next()) {
-                int memberId = result.getInt("MemberID");
                 String memberFname = result.getString("FirstName");
                 String memberLname = result.getString("LastName");
                 String memberPhoneNumber = result.getString("PhoneNumber");
@@ -72,11 +72,14 @@ public class MemberDAO {
                 String memberPassword = result.getString("Password");
                 String memberType = result.getString("Type");
                 String memberDepartment = result.getString("Department");
-                System.out.println("MemberID: " + memberId + " First Name: " + memberFname + " Last Name: " + memberLname + " PhoneNumber: " + memberPhoneNumber + " Email: " + memberEmail + " Password: " + memberPassword + " Type: " + memberType + " Department: " + memberDepartment);
+                double memberPaymentDue = result.getDouble("PaymentDue");
+                member = new Member(id, memberFname, memberLname, memberPhoneNumber, memberEmail, memberPassword, memberType, memberDepartment, memberPaymentDue);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        return member;
     }
 
     public String getMemberFirstNameByEmail(String email) {
@@ -193,13 +196,15 @@ public class MemberDAO {
                         resultSet.getString("email"),
                         resultSet.getString("password"),
                         resultSet.getString("type"),
-                        resultSet.getString("department")
+                        resultSet.getString("department"),
+                        resultSet.getDouble("PaymentDue")
                 );
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null; // Return null if no member is found
-    }}
+        return null;
+    }
+}
 

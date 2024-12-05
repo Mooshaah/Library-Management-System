@@ -1,9 +1,7 @@
 package com.example.librarymanagementsystem.javaFX.Member;
 
-import com.example.librarymanagementsystem.Backend.DAOs.BorrowRecordDAO;
-import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
-import com.example.librarymanagementsystem.Backend.Models.Book;
-import com.example.librarymanagementsystem.Backend.Models.User;
+import com.example.librarymanagementsystem.Backend.DAOs.*;
+import com.example.librarymanagementsystem.Backend.Models.*;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
