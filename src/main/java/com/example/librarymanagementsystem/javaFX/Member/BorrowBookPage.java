@@ -2,6 +2,7 @@ package com.example.librarymanagementsystem.javaFX.Member;
 
 import com.example.librarymanagementsystem.Backend.DAOs.*;
 import com.example.librarymanagementsystem.Backend.Models.*;
+import com.example.librarymanagementsystem.javaFX.AlertUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,7 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BorrowBookPage {
@@ -54,10 +54,21 @@ public class BorrowBookPage {
         ObservableList<Book> bookList = FXCollections.observableArrayList(availableBooks);
         bookTable.setItems(bookList);
 
-        // Set selection mode to SINGLE
         bookTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-        Button borrowButton = getBorrowButton(bookTable, bookList);
+        Button borrowButton = new Button("Borrow Selected Book");
+        borrowButton.setOnAction(event -> {
+            Book selectedBook = bookTable.getSelectionModel().getSelectedItem();
+            if (selectedBook == null) {
+                AlertUtils.showAlert(Alert.AlertType.ERROR, "No Book Selected", "Please select a book to borrow.");
+                return;
+            }
+
+            borrowRecordDAO.borrowBook(user.getId(), selectedBook);
+            bookList.remove(selectedBook);
+            bookTable.setItems(FXCollections.observableArrayList(bookList));
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION, "Success", "Book borrowed successfully!");
+        });
 
         Button backButton = new Button("Back");
         backButton.setOnAction(event -> new MemberDashboardPage(stage, user).show());
@@ -67,30 +78,5 @@ public class BorrowBookPage {
         Scene scene = new Scene(layout, 600, 550);
         stage.setScene(scene);
         stage.show();
-    }
-
-    private Button getBorrowButton(TableView<Book> bookTable, ObservableList<Book> bookList) {
-        Button borrowButton = new Button("Borrow Selected Book");
-        borrowButton.setOnAction(event -> {
-            Book selectedBook = bookTable.getSelectionModel().getSelectedItem();
-            if (selectedBook == null) {
-                showAlert(Alert.AlertType.ERROR, "No Book Selected", "Please select a book to borrow.");
-                return;
-            }
-
-            // Borrow the selected book
-            borrowRecordDAO.borrowBook(user.getId(), selectedBook);
-            bookList.remove(selectedBook);
-            bookTable.setItems(FXCollections.observableArrayList(bookList));
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Book borrowed successfully!");
-        });
-        return borrowButton;
-    }
-
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

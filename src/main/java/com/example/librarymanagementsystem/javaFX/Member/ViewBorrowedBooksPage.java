@@ -74,8 +74,16 @@ public class ViewBorrowedBooksPage {
                     String.valueOf(record.getOverdueDays()) : "0");
         });
 
+        // New Column: Return Status
+        TableColumn<Book, String> returnStatusColumn = new TableColumn<>("Return Status");
+        returnStatusColumn.setCellValueFactory(data -> {
+            BorrowRecord record = bookRecordMap.get(data.getValue());
+            return new SimpleStringProperty(record != null && record.getReturnDate() != null ?
+                    "Returned" : "Not Returned");
+        });
+
         // Add all columns to the table
-        bookTable.getColumns().addAll(titleColumn, authorColumn, genreColumn, borrowDateColumn, dueDateColumn, overdueColumn);
+        bookTable.getColumns().addAll(titleColumn, authorColumn, genreColumn, borrowDateColumn, dueDateColumn, overdueColumn, returnStatusColumn);
 
         // Fetch Borrow Records and populate bookRecordMap
         List<BorrowRecord> borrowedRecords = borrowRecordDAO.getBorrowedRecordsByMemberId(user.getId());

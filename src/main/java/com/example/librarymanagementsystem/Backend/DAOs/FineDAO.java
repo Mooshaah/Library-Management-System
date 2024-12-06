@@ -64,11 +64,7 @@ public class FineDAO {
                         insertFine.executeUpdate();
                         System.out.println("Inserted fine for MemberID: " + memberID + " with amount $" + amount);
                     }
-
-                    member.addFine(amount);
-                    updateMember.setDouble(1, member.getPaymentDue());
-                    updateMember.setInt(2, memberID);
-                    updateMember.executeUpdate();
+                    updateMemberPayment(memberID, member, amount, updateMember);
                 }
             }
         } catch (SQLException e) {
@@ -120,6 +116,14 @@ public class FineDAO {
         } else {
             return baseAmount + (baseAmount * 0.1 * (overdueDays - 1));
         }
+    }
+
+    private void updateMemberPayment(int memberID, Member member, double fineAmount, PreparedStatement updateMember) throws SQLException {
+        member.addFine(fineAmount);
+
+        updateMember.setDouble(1, member.getPaymentDue());
+        updateMember.setInt(2, memberID);
+        updateMember.executeUpdate();
     }
 
 }

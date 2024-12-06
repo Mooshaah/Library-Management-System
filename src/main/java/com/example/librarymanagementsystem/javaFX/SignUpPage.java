@@ -120,6 +120,7 @@ public class SignUpPage {
         String type = typeComboBox.getValue();
         String department = departmentComboBox.getValue();
 
+
         if (!validateFields(statusLabel, firstName, lastName, phone, email, password, type, department)) {
             return;
         }
@@ -127,10 +128,13 @@ public class SignUpPage {
         Member newMember = new Member(0, firstName, lastName, phone, email, password, type, department, 0);
         boolean isCreated = memberDAO.createMember(newMember);
 
+        int memberID = memberDAO.getMemberIDByName(firstName, lastName);
+        newMember.setId(memberID);
+
         if (isCreated) {
             statusLabel.setText("Sign-up successful!");
             statusLabel.setTextFill(Color.GREEN);
-            new MemberDashboardPage(stage, newMember).show(); // Pass the Member object to DashboardPage
+            new MemberDashboardPage(stage, newMember).show();
         } else {
             statusLabel.setText("Sign-up failed. Email may already be in use.");
             statusLabel.setTextFill(Color.RED);

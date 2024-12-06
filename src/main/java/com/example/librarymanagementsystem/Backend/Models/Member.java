@@ -66,4 +66,8 @@ public class Member implements User {
     public void addFine(double amount) {
         paymentDue += amount;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

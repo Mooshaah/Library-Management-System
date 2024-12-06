@@ -1,6 +1,5 @@
 package com.example.librarymanagementsystem.Backend.Models;
 
-import java.time.LocalDate;
 import java.sql.Date;
 public class BorrowRecord {
     private int id;
@@ -54,5 +53,9 @@ public class BorrowRecord {
 
     public int getOverdueDays() {
         return overdueDays;
+    }
+
+    public void setReturnDate(Date returnDate) {
+        this.returnDate = returnDate;
     }
 }

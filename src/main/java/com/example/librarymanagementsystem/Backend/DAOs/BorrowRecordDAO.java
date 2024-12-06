@@ -98,7 +98,15 @@ public class BorrowRecordDAO {
 
     public ArrayList<Book> getBorrowedBooksByMemberId(int memberId) {
         ArrayList<Book> borrowedBooks = new ArrayList<>();
-        String query = "SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName " + "FROM book b " + "JOIN book_author ba ON b.BookID = ba.BookID " + "JOIN author a ON ba.AuthorID = a.AuthorID " + "JOIN book_borrowing_record bbr ON b.BookID = bbr.BookID " + "JOIN borrowing_record br ON bbr.RecordID = br.RecordID " + "WHERE br.MemberID = ? AND br.ReturnDate IS NULL";
+        String query = """
+                SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName
+                FROM book b
+                JOIN book_author ba ON b.BookID = ba.BookID
+                JOIN author a ON ba.AuthorID = a.AuthorID
+                JOIN book_borrowing_record bbr ON b.BookID = bbr.BookID
+                JOIN borrowing_record br ON bbr.RecordID = br.RecordID
+                WHERE br.MemberID = ? AND br.ReturnDate IS NULL
+                """;
 
         try (Connection connection = dbConnector.connect(); PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, memberId);
@@ -129,14 +137,14 @@ public class BorrowRecordDAO {
     public List<BorrowRecord> getBorrowedRecordsByMemberId(int memberId) {
         List<BorrowRecord> borrowRecords = new ArrayList<>();
         String query = """
-                SELECT br.RecordID, br.BorrowDate, br.DueDate, b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
+                SELECT br.RecordID, br.BorrowDate, br.DueDate, br.ReturnDate, b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
                        a.AuthorID, a.FirstName AS AuthorFirstName, a.LastName AS AuthorLastName
                 FROM borrowing_record br
                 JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
                 JOIN book b ON bbr.BookID = b.BookID
                 JOIN book_author ba ON b.BookID = ba.BookID
                 JOIN author a ON ba.AuthorID = a.AuthorID
-                WHERE br.MemberID = ? AND br.ReturnDate IS NULL
+                WHERE br.MemberID = ?
                 """;
 
         try (Connection connection = dbConnector.connect();
@@ -149,6 +157,7 @@ public class BorrowRecordDAO {
                     int recordId = resultSet.getInt("RecordID");
                     Date borrowDate = resultSet.getDate("BorrowDate");
                     Date dueDate = resultSet.getDate("DueDate");
+                    Date returnDate = resultSet.getDate("ReturnDate");
 
                     // Fetch book details
                     int bookId = resultSet.getInt("BookID");
@@ -168,6 +177,7 @@ public class BorrowRecordDAO {
 
                     // Create BorrowRecord
                     BorrowRecord borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate, book);
+                    borrowRecord.setReturnDate(returnDate);
                     borrowRecords.add(borrowRecord);
                 }
             }

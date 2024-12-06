@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class MemberDAO {
     private DBConnector dbConnector;
@@ -206,5 +207,34 @@ public class MemberDAO {
         }
         return null;
     }
-}
+
+    public ArrayList<Member> getAllMembers() {
+        ArrayList<Member> members = new ArrayList<>();
+        String query = "SELECT * FROM member";
+
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                Member member = new Member(
+                        resultSet.getInt("memberID"),
+                        resultSet.getString("firstName"),
+                        resultSet.getString("lastName"),
+                        resultSet.getString("phoneNumber"),
+                        resultSet.getString("email"),
+                        resultSet.getString("password"),
+                        resultSet.getString("type"),
+                        resultSet.getString("department"),
+                        resultSet.getDouble("paymentDue")
+                );
+
+                members.add(member);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return members;
+    }}
 
