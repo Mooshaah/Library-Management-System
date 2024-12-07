@@ -86,8 +86,6 @@ public class BorrowRecordDAO {
 
                 fineDAO.calculateFine(member.getId());
 
-                System.out.println("Book with title {" + book.getTitle() + "} has been returned.");
-                System.out.println("Member has to pay $" + member.getPaymentDue() + " as fine.");
             }
         } catch (SQLException e) {
             e.printStackTrace();

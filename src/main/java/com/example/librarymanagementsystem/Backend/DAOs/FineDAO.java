@@ -56,13 +56,11 @@ public class FineDAO {
                         updateFine.setDouble(1, updatedAmount);
                         updateFine.setInt(2, memberID);
                         updateFine.executeUpdate();
-                        System.out.println("Updated fine for MemberID: " + memberID + " to $" + updatedAmount);
                     } else {
                         insertFine.setDouble(1, amount);
                         insertFine.setBoolean(2, false);
                         insertFine.setInt(3, memberID);
                         insertFine.executeUpdate();
-                        System.out.println("Inserted fine for MemberID: " + memberID + " with amount $" + amount);
                     }
                     updateMemberPayment(memberID, member, amount, updateMember);
                 }
@@ -72,7 +70,6 @@ public class FineDAO {
             throw new RuntimeException(e);
         }
     }
-
 
     public List<Fine> getFinesByMemberId(int memberId) {
         List<Fine> fines = new ArrayList<>();

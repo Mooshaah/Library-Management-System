@@ -38,26 +38,6 @@ public class MemberDAO {
         return false;
     }
 
-    public void updateMember(Member member, int memberId) {
-        String query = "UPDATE member SET FirstName = ?, LastName = ?, PhoneNumber = ?, Email = ?, Password=?, Type = ?, Department = ? WHERE MemberID = ?";
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, member.getFirstName());
-            statement.setString(2, member.getLastName());
-            statement.setString(3, member.getPhoneNumber());
-            statement.setString(4, member.getEmail());
-            statement.setString(5, member.getPassword());
-            statement.setString(6, member.getType());
-            statement.setString(7, member.getDepartment());
-            statement.setInt(8, memberId);
-            statement.executeUpdate();
-            System.out.println("Member after update: ");
-            getMemberById(memberId);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public Member getMemberById(int id) {
         String query = "SELECT * FROM member WHERE MemberID= ?";
         Member member = null;
@@ -83,22 +63,6 @@ public class MemberDAO {
         return member;
     }
 
-    public String getMemberFirstNameByEmail(String email) {
-        String query = "SELECT FirstName FROM member WHERE Email = ?";
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, email);
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getString("FirstName");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-
     public Boolean checkMemberEmail(String email) {
         String query = "SELECT Count(*) AS count FROM member WHERE Email = ?";
         try (Connection connection = dbConnector.connect();
@@ -109,9 +73,7 @@ public class MemberDAO {
                 int count = ra.getInt("count");
 
                 if (count > 0) {
-                    System.out.println("Email already exists !");
                     return true;
-
                 }
             }
         } catch (SQLException e) {
@@ -149,12 +111,6 @@ public class MemberDAO {
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, memberId);
-            int ra = statement.executeUpdate();
-            if (ra > 0) {
-                System.out.println("Member with ID " + memberId + " has been deleted");
-            } else {
-                System.out.println("No member with such ID !");
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -168,9 +124,7 @@ public class MemberDAO {
             statement.setString(2, LastName);
             ResultSet rs = statement.executeQuery();
             while (rs.next()) {
-                int memberID = rs.getInt("MemberID");
-                System.out.println("Member ID: " + memberID);
-                return memberID;
+                return rs.getInt("MemberID");
             }
         } catch (
                 SQLException e) {

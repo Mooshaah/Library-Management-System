@@ -44,136 +44,9 @@ public class BookDAO {
             bookAuthorStatement.setInt(2, authorId);
             bookAuthorStatement.executeUpdate();
 
-            System.out.println("Book added successfully with BookID: " + bookId + " linked to AuthorID: " + authorId);
-
         } catch (SQLException e) {
             System.err.println("Failed to add book: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-
-    public ArrayList<Book> getBooksByGenre(String genre) {
-        String query = """
-                SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, 
-                       a.AuthorID, a.FirstName, a.LastName 
-                FROM book b 
-                JOIN book_author ba ON b.BookID = ba.BookID 
-                JOIN author a ON ba.AuthorID = a.AuthorID 
-                WHERE b.Genre = ?
-                """;
-        ArrayList<Book> books = new ArrayList<>();
-
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-
-            statement.setString(1, genre);
-            ResultSet rs = statement.executeQuery();
-            boolean isExist = false;
-
-            while (rs.next()) {
-                isExist = true;
-
-                int bookID = rs.getInt("BookID");
-                String bookTitle = rs.getString("Title");
-                String pubDate = rs.getString("PublicationDate");
-                boolean availability = rs.getBoolean("Availability");
-
-                int authorID = rs.getInt("AuthorID");
-                String authorFirstName = rs.getString("FirstName");
-                String authorLastName = rs.getString("LastName");
-                Author author = new Author(authorID, authorFirstName, authorLastName);
-
-                Book book = new Book(bookID, pubDate, bookTitle, genre, author, availability);
-                books.add(book);
-            }
-
-            if (!isExist) {
-                System.out.println("The book genre: '" + genre + "' is not available in the library.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return books;
-    }
-
-    public void getBookByTitle(String title) {
-        String query = "SELECT * FROM book WHERE Title = ?";
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, title);
-            ResultSet rs = statement.executeQuery();
-            boolean isExist = false;
-
-            while (rs.next()) {
-                isExist = true;
-                String bookTitle = rs.getString("Title");
-                if (bookTitle.equals(title)) {
-                    int bookID = rs.getInt("BookID");
-                    String genre = rs.getString("Genre");
-                    String pubDate = rs.getString("PublicationDate");
-                    boolean availability = rs.getBoolean("Availability");
-
-                    System.out.println("Book Details: ID: " + bookID + ", Title: " + bookTitle + ", Genre: " + genre + ", Publication Date: " + pubDate + ", Available: " + availability);
-                } else {
-                    System.out.println("The book titled: '" + title + "' is not available in the library.");
-                }
-            }
-
-            if (!isExist) {
-                System.out.println("The book genre: '" + title + "' is not available in the library.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void getBookByAuthor(Author author) {
-        String authorQuery = "SELECT AuthorID FROM author WHERE firstName = ? AND lastName = ?";
-        String bookQuery = "SELECT BookID FROM book_author WHERE authorID = ?";
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement authorStatement = connection.prepareStatement(authorQuery);
-             PreparedStatement bookStatement = connection.prepareStatement(bookQuery)) {
-            authorStatement.setString(1, author.getFirstName());
-            authorStatement.setString(2, author.getLastName());
-            ResultSet rs = authorStatement.executeQuery();
-
-            int rsAuthorID = -1;
-            if (rs.next()) {
-                rsAuthorID = rs.getInt("authorID");
-                System.out.println(rsAuthorID);
-            }
-
-            bookStatement.setInt(1, rsAuthorID);
-            ResultSet rs2 = bookStatement.executeQuery();
-
-            while (rs2.next()) {
-                int rs2BookID = rs2.getInt("bookID");
-                getBookByID(rs2BookID);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void getBookByID(int id) {
-        String query = "SELECT * FROM book WHERE bookID = ?";
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, id);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                int bookID = rs.getInt("BookID");
-                String bookTitle = rs.getString("Title");
-                String genre = rs.getString("Genre");
-                String pubDate = rs.getString("PublicationDate");
-                boolean availability = rs.getBoolean("Availability");
-
-                System.out.println("Book Details: ID: " + bookID + ", Title: " + bookTitle + ", Genre: " + genre + ", Publication Date: " + pubDate + ", Available: " + availability);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -265,12 +138,7 @@ public class BookDAO {
             // Delete the book from the book table
             try (PreparedStatement deleteBookStmt = connection.prepareStatement(deleteBookQuery)) {
                 deleteBookStmt.setInt(1, bookId);
-                int rowsAffected = deleteBookStmt.executeUpdate();
-                if (rowsAffected > 0) {
-                    System.out.println("Book with ID " + bookId + " has been deleted.");
-                } else {
-                    System.out.println("No book with such ID exists.");
-                }
+                deleteBookStmt.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();

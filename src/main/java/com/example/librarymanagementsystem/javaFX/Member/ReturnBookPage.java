@@ -4,6 +4,7 @@ import com.example.librarymanagementsystem.Backend.DAOs.BorrowRecordDAO;
 import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.Models.Member;
 import com.example.librarymanagementsystem.Backend.Models.User;
+import com.example.librarymanagementsystem.javaFX.AlertUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -63,19 +64,21 @@ public class ReturnBookPage {
         returnButton.setOnAction(event -> {
             ObservableList<Book> selectedBooks = bookTable.getSelectionModel().getSelectedItems();
             if (selectedBooks.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "No Books Selected", "Please select at least one book to return.");
+                // Use AlertUtils.showAlert for error
+                AlertUtils.showAlert(Alert.AlertType.ERROR, "No Books Selected", "Please select at least one book to return.");
                 return;
             }
 
             ArrayList<Book> booksToReturn = new ArrayList<>(selectedBooks);
-            LocalDate testReturnDate = LocalDate.of(2024, 12, 14);
+            LocalDate testReturnDate = LocalDate.of(2024, 12, 14); // Placeholder for return date
             borrowRecordDAO.returnBook((Member) user, booksToReturn);
 
             // Refresh the table view
             bookList.removeAll(selectedBooks);
             bookTable.setItems(FXCollections.observableArrayList(bookList));
 
-            showAlert(Alert.AlertType.INFORMATION, "Success", "Books returned successfully!");
+            // Use AlertUtils.showAlert for success
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION, "Success", "Books returned successfully!");
         });
 
         Button backButton = new Button("Back");
@@ -86,12 +89,5 @@ public class ReturnBookPage {
         Scene scene = new Scene(layout, 600, 550);
         stage.setScene(scene);
         stage.show();
-    }
-
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

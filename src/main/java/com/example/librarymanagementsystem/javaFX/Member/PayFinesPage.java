@@ -4,6 +4,8 @@ import com.example.librarymanagementsystem.Backend.DAOs.FineDAO;
 import com.example.librarymanagementsystem.Backend.Models.Fine;
 import com.example.librarymanagementsystem.Backend.Models.Member;
 import com.example.librarymanagementsystem.Backend.Models.User;
+import com.example.librarymanagementsystem.javaFX.AlertUtils;
+import com.example.librarymanagementsystem.javaFX.Member.MemberDashboardPage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -59,12 +61,12 @@ public class PayFinesPage {
         payButton.setOnAction(event -> {
             Fine selectedFine = fineTable.getSelectionModel().getSelectedItem();
             if (selectedFine == null) {
-                showAlert(Alert.AlertType.ERROR, "No Fine Selected", "Please select a fine to pay.");
+                AlertUtils.showAlert(Alert.AlertType.ERROR, "No Fine Selected", "Please select a fine to pay.");
                 return;
             }
 
             if (selectedFine.isPaid()) {
-                showAlert(Alert.AlertType.INFORMATION, "Fine Already Paid", "The selected fine has already been paid.");
+                AlertUtils.showAlert(Alert.AlertType.INFORMATION, "Fine Already Paid", "The selected fine has already been paid.");
                 return;
             }
 
@@ -72,7 +74,7 @@ public class PayFinesPage {
             fineDAO.payFine(selectedFine.getId(), (Member) user);
             selectedFine.setPaid(true);
             fineTable.refresh();
-            showAlert(Alert.AlertType.INFORMATION, "Payment Successful", "The fine has been paid successfully.");
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION, "Payment Successful", "The fine has been paid successfully.");
         });
 
         // Back button
@@ -84,12 +86,5 @@ public class PayFinesPage {
         Scene scene = new Scene(layout, 600, 500);
         stage.setScene(scene);
         stage.show();
-    }
-
-    private void showAlert(Alert.AlertType alertType, String title, String message) {
-        Alert alert = new Alert(alertType);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }
