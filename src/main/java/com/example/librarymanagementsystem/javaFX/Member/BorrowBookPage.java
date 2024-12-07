@@ -1,7 +1,10 @@
 package com.example.librarymanagementsystem.javaFX.Member;
 
-import com.example.librarymanagementsystem.Backend.DAOs.*;
-import com.example.librarymanagementsystem.Backend.Models.*;
+import com.example.librarymanagementsystem.Backend.DAOs.BookDAO;
+import com.example.librarymanagementsystem.Backend.DAOs.BorrowRecordDAO;
+import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
+import com.example.librarymanagementsystem.Backend.Models.Book;
+import com.example.librarymanagementsystem.Backend.Models.User;
 import com.example.librarymanagementsystem.javaFX.AlertUtils;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -18,6 +21,7 @@ import java.util.List;
 public class BorrowBookPage {
     private final Stage stage;
     private final LibrarianDAO librarianDAO;
+    private final BookDAO bookDAO;
     private final BorrowRecordDAO borrowRecordDAO;
     private final User user;
 
@@ -25,6 +29,7 @@ public class BorrowBookPage {
         this.stage = stage;
         this.librarianDAO = new LibrarianDAO();
         this.borrowRecordDAO = new BorrowRecordDAO();
+        this.bookDAO = new BookDAO();
         this.user = user;
     }
 
@@ -50,7 +55,7 @@ public class BorrowBookPage {
 
         bookTable.getColumns().addAll(titleColumn, genreColumn, authorColumn);
 
-        List<Book> availableBooks = librarianDAO.getAvailableBooks();
+        List<Book> availableBooks = bookDAO.getAvailableBooks();
         ObservableList<Book> bookList = FXCollections.observableArrayList(availableBooks);
         bookTable.setItems(bookList);
 

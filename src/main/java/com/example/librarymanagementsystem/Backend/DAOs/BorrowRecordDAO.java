@@ -1,23 +1,22 @@
 package com.example.librarymanagementsystem.Backend.DAOs;
 
 import com.example.librarymanagementsystem.Backend.DBConnector;
-import com.example.librarymanagementsystem.Backend.Models.*;
+import com.example.librarymanagementsystem.Backend.Models.Author;
+import com.example.librarymanagementsystem.Backend.Models.Book;
+import com.example.librarymanagementsystem.Backend.Models.BorrowRecord;
+import com.example.librarymanagementsystem.Backend.Models.Member;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BorrowRecordDAO {
     DBConnector dbConnector;
-    ArrayList<Book> books;
-    MemberDAO memberDAO;
     FineDAO fineDAO;
 
     public BorrowRecordDAO() {
         dbConnector = new DBConnector();
-        books = new ArrayList<>();
-        memberDAO = new MemberDAO();
         fineDAO = new FineDAO();
     }
 
@@ -176,7 +175,7 @@ public class BorrowRecordDAO {
                     Book book = new Book(bookId, publicationDate, title, genre, author, availability);
 
                     // Create BorrowRecord
-                    BorrowRecord borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate, book);
+                    BorrowRecord borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate, book, null);
                     borrowRecord.setReturnDate(returnDate);
                     borrowRecords.add(borrowRecord);
                 }
@@ -184,6 +183,67 @@ public class BorrowRecordDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error fetching borrowed records for member ID: " + memberId, e);
+        }
+
+        return borrowRecords;
+    }
+
+    public List<BorrowRecord> getAllBorrowRecords() {
+        List<BorrowRecord> borrowRecords = new ArrayList<>();
+        String query = """
+                SELECT br.RecordID, br.BorrowDate, br.DueDate, br.ReturnDate, 
+                       b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
+                       a.AuthorID, a.FirstName AS AuthorFirstName, a.LastName AS AuthorLastName,
+                       m.MemberID, m.FirstName AS MemberFirstName, m.LastName AS MemberLastName, 
+                       m.PhoneNumber, m.Email, m.Type, m.Department, m.PaymentDue
+                FROM borrowing_record br
+                JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
+                JOIN book b ON bbr.BookID = b.BookID
+                JOIN book_author ba ON b.BookID = ba.BookID
+                JOIN author a ON ba.AuthorID = a.AuthorID
+                JOIN member m ON br.MemberID = m.MemberID
+                """;
+
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                int recordId = resultSet.getInt("RecordID");
+                Date borrowDate = resultSet.getDate("BorrowDate");
+                Date dueDate = resultSet.getDate("DueDate");
+                Date returnDate = resultSet.getDate("ReturnDate");
+
+                int bookId = resultSet.getInt("BookID");
+                String title = resultSet.getString("Title");
+                String genre = resultSet.getString("Genre");
+                String publicationDate = resultSet.getString("PublicationDate");
+                boolean availability = resultSet.getBoolean("Availability");
+
+                int authorId = resultSet.getInt("AuthorID");
+                String authorFirstName = resultSet.getString("AuthorFirstName");
+                String authorLastName = resultSet.getString("AuthorLastName");
+                Author author = new Author(authorId, authorFirstName, authorLastName);
+
+                Book book = new Book(bookId, publicationDate, title, genre, author, availability);
+
+                int memberId = resultSet.getInt("MemberID");
+                String memberFirstName = resultSet.getString("MemberFirstName");
+                String memberLastName = resultSet.getString("MemberLastName");
+                String phoneNumber = resultSet.getString("PhoneNumber");
+                String email = resultSet.getString("Email");
+                String type = resultSet.getString("Type");
+                String department = resultSet.getString("Department");
+                double paymentDue = resultSet.getDouble("PaymentDue");
+
+                Member member = new Member(memberId, memberFirstName, memberLastName, phoneNumber, email, null, type, department, paymentDue);
+
+                BorrowRecord borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate, book, member);
+                borrowRecord.setReturnDate(returnDate);
+                borrowRecords.add(borrowRecord);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error fetching all borrow records", e);
         }
 
         return borrowRecords;

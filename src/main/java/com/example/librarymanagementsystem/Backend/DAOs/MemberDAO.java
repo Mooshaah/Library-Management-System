@@ -217,6 +217,13 @@ public class MemberDAO {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
+                // Fetch paymentDue and check for NULL
+                double paymentDue = resultSet.getDouble("paymentDue");
+                if (resultSet.wasNull()) {
+                    paymentDue = -1; // Set to -1 if NULL
+                }
+
+                // Create Member object
                 Member member = new Member(
                         resultSet.getInt("memberID"),
                         resultSet.getString("firstName"),
@@ -226,7 +233,7 @@ public class MemberDAO {
                         resultSet.getString("password"),
                         resultSet.getString("type"),
                         resultSet.getString("department"),
-                        resultSet.getDouble("paymentDue")
+                        paymentDue
                 );
 
                 members.add(member);
@@ -236,5 +243,6 @@ public class MemberDAO {
         }
 
         return members;
-    }}
+    }
+}
 

@@ -41,7 +41,7 @@ public class FineDAO {
                 Date borrowDate = resultSet.getDate("BorrowDate");
                 Date returnDate = resultSet.getDate("ReturnDate");
                 Date dueDate = resultSet.getDate("DueDate");
-                BorrowRecord borrowRecord = new BorrowRecord(recordID, borrowDate, dueDate, null);
+                BorrowRecord borrowRecord = new BorrowRecord(recordID, borrowDate, dueDate, null, null);
                 int overdueDays = borrowRecord.calculateOverdueDays(returnDate);
 
                 if (overdueDays != 0) {
@@ -97,12 +97,34 @@ public class FineDAO {
         return fines;
     }
 
-    public void payFine(int fineId) {
+    public void payFine(int fineId, Member member) {
         String query = "UPDATE fine SET IsPaid = true WHERE FineID = ?";
+        String updateMemberQuery = "UPDATE member SET PaymentDue = ? WHERE MemberID = ?";
+        String getFineQuery = "SELECT Amount FROM fine WHERE FineID = ?";
+
         try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, fineId);
-            statement.executeUpdate();
+             PreparedStatement getFineStatement = connection.prepareStatement(getFineQuery);
+             PreparedStatement updateFineStatement = connection.prepareStatement(query);
+             PreparedStatement updateMemberStatement = connection.prepareStatement(updateMemberQuery)) {
+
+            // Fetch the fine amount
+            getFineStatement.setInt(1, fineId);
+            ResultSet resultSet = getFineStatement.executeQuery();
+            double fineAmount = 0;
+            if (resultSet.next()) {
+                fineAmount = resultSet.getDouble("Amount");
+            }
+
+            // Update the fine to mark it as paid
+            updateFineStatement.setInt(1, fineId);
+            updateFineStatement.executeUpdate();
+
+            // Update the member's PaymentDue
+            double updatedPaymentDue = member.getPaymentDue() - fineAmount;
+            updateMemberStatement.setDouble(1, updatedPaymentDue);
+            updateMemberStatement.setInt(2, member.getId());
+            updateMemberStatement.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error paying fine ID: " + fineId, e);
@@ -125,5 +147,4 @@ public class FineDAO {
         updateMember.setInt(2, memberID);
         updateMember.executeUpdate();
     }
-
 }

@@ -2,6 +2,7 @@ package com.example.librarymanagementsystem.javaFX.Member;
 
 import com.example.librarymanagementsystem.Backend.DAOs.FineDAO;
 import com.example.librarymanagementsystem.Backend.Models.Fine;
+import com.example.librarymanagementsystem.Backend.Models.Member;
 import com.example.librarymanagementsystem.Backend.Models.User;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -9,7 +10,10 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -65,9 +69,9 @@ public class PayFinesPage {
             }
 
             // Process fine payment
-            fineDAO.payFine(selectedFine.getId());
-            selectedFine.setPaid(true); // Update the status locally
-            fineTable.refresh(); // Refresh the table view
+            fineDAO.payFine(selectedFine.getId(), (Member) user);
+            selectedFine.setPaid(true);
+            fineTable.refresh();
             showAlert(Alert.AlertType.INFORMATION, "Payment Successful", "The fine has been paid successfully.");
         });
 

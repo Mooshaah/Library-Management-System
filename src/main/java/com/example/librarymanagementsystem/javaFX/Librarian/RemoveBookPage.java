@@ -1,8 +1,10 @@
 package com.example.librarymanagementsystem.javaFX.Librarian;
 
-import com.example.librarymanagementsystem.Backend.Models.Book;
+import com.example.librarymanagementsystem.Backend.DAOs.BookDAO;
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
+import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.Models.User;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -11,18 +13,19 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.beans.property.SimpleStringProperty;
 
 import java.util.List;
 
 public class RemoveBookPage {
     private final Stage stage;
     private final LibrarianDAO librarianDAO;
+    private final BookDAO bookDAO;
     private final User user;
 
     public RemoveBookPage(Stage stage, User user) {
         this.stage = stage;
         this.librarianDAO = new LibrarianDAO();
+        this.bookDAO = new BookDAO();
         this.user = user;
     }
 
@@ -55,7 +58,7 @@ public class RemoveBookPage {
         bookTable.getColumns().addAll(titleColumn, genreColumn, availabilityColumn, authorColumn);
 
         // Fetch books from the database and populate the table
-        List<Book> books = librarianDAO.getAllBooks();
+        List<Book> books = bookDAO.getAllBooks();
         ObservableList<Book> bookList = FXCollections.observableArrayList(books);
         bookTable.setItems(bookList);
 
@@ -86,7 +89,7 @@ public class RemoveBookPage {
             }
 
             // Remove the selected book
-            librarianDAO.deleteBook(selectedBook.getId());
+            bookDAO.deleteBook(selectedBook.getId());
             bookList.remove(selectedBook);
             statusLabel.setText("Book removed successfully!");
             statusLabel.setStyle("-fx-text-fill: green;");

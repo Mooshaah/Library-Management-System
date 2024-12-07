@@ -1,8 +1,9 @@
 package com.example.librarymanagementsystem.javaFX.Librarian;
 
+import com.example.librarymanagementsystem.Backend.DAOs.BookDAO;
+import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
 import com.example.librarymanagementsystem.Backend.Models.Author;
 import com.example.librarymanagementsystem.Backend.Models.Book;
-import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
 import com.example.librarymanagementsystem.Backend.Models.User;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -17,11 +18,13 @@ import java.util.ArrayList;
 public class AddBookPage {
     private final Stage stage;
     private final LibrarianDAO librarianDAO;
+    private final BookDAO bookDAO;
     private final User user;
 
     public AddBookPage(Stage stage, User user) {
         this.stage = stage;
         this.librarianDAO = new LibrarianDAO();
+        this.bookDAO = new BookDAO();
         this.user = user;
     }
 
@@ -87,7 +90,7 @@ public class AddBookPage {
 
             try {
                 Book newBook = new Book(0, publicationDate, title, genre, selectedAuthor, true);
-                librarianDAO.addBook(newBook, newBook.getAuthor().getId());
+                bookDAO.addBook(newBook, selectedAuthor.getId());
                 statusLabel.setTextFill(Color.GREEN);
                 statusLabel.setText("Book added successfully.");
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.example.librarymanagementsystem.Backend.Models;
 
 import java.sql.Date;
+
 public class BorrowRecord {
     private int id;
     private Date borrowDate;
@@ -8,16 +9,18 @@ public class BorrowRecord {
     private Date returnDate;
     private int overdueDays;
     private Book book;
+    private Member member;
 
-    public BorrowRecord(int id, Date borrowDate, Date dueDate, Book book) {
+    public BorrowRecord(int id, Date borrowDate, Date dueDate, Book book, Member member) {
         this.id = id;
         this.borrowDate = borrowDate;
         this.dueDate = dueDate;
         this.book = book;
+        this.member = member;
         this.overdueDays = 0;
     }
-
     public Date getBorrowDate() {
+
         return borrowDate;
     }
 
@@ -57,5 +60,9 @@ public class BorrowRecord {
 
     public void setReturnDate(Date returnDate) {
         this.returnDate = returnDate;
+    }
+
+    public Member getMember() {
+        return member;
     }
 }
