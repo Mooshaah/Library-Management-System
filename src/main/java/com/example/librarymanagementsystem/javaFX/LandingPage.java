@@ -15,11 +15,9 @@ public class LandingPage {
     }
 
     public void show() {
-        // Heading
         Label heading = new Label("Welcome to UofCanada Library");
         heading.setStyle("-fx-font-size: 24px; -fx-padding: 10px;");
 
-        // Buttons
         Button librarianButton = new Button("Login as Librarian");
         librarianButton.setOnAction(e -> {
             LoginPage loginPage = new LoginPage(stage, LibraryApp.LIBRARIAN);
@@ -32,12 +30,10 @@ public class LandingPage {
             loginPage.show();
         });
 
-        // Layout
         VBox layout = new VBox(20, heading, librarianButton, memberButton);
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-padding: 20px;");
 
-        // Scene
         Scene scene = new Scene(layout, 400, 300);
         stage.setTitle("Library Management System");
         stage.setScene(scene);

@@ -40,13 +40,13 @@ public class BorrowRecord {
         return book;
     }
 
-    public int calculateOverdueDays(Date returnDate) {
-        if (returnDate == null || !returnDate.after(dueDate)) {
+    public int calculateOverdueDays(Date day) {
+        if (day == null || !day.after(dueDate)) {
             return 0;
         }
 
         // Calculate the difference in milliseconds
-        long differenceInMillis = returnDate.getTime() - dueDate.getTime();
+        long differenceInMillis = day.getTime() - dueDate.getTime();
 
         // Convert milliseconds to days
         this.overdueDays = (int) (differenceInMillis / (24 * 60 * 60 * 1000));

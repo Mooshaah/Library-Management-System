@@ -16,7 +16,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +45,6 @@ public class ViewBorrowedBooksPage {
         TableView<Book> bookTable = new TableView<>();
         bookTable.setPrefHeight(400);
 
-        // Columns for Book details
         TableColumn<Book, String> titleColumn = new TableColumn<>("Title");
         titleColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTitle()));
 
@@ -53,7 +54,6 @@ public class ViewBorrowedBooksPage {
         TableColumn<Book, String> genreColumn = new TableColumn<>("Genre");
         genreColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getGenre()));
 
-        // Columns for BorrowRecord details
         TableColumn<Book, String> borrowDateColumn = new TableColumn<>("Borrow Date");
         borrowDateColumn.setCellValueFactory(data -> {
             BorrowRecord record = bookRecordMap.get(data.getValue());
@@ -71,12 +71,16 @@ public class ViewBorrowedBooksPage {
         TableColumn<Book, String> overdueColumn = new TableColumn<>("Overdue Days");
         overdueColumn.setCellValueFactory(data -> {
             BorrowRecord record = bookRecordMap.get(data.getValue());
-            record.calculateOverdueDays(record.getReturnDate());
+            if (record.getReturnDate() == null) {
+                LocalDate today = LocalDate.now();
+                record.calculateOverdueDays(Date.valueOf(today));
+            } else {
+                record.calculateOverdueDays(record.getReturnDate());
+            }
             return new SimpleStringProperty(record != null ?
                     String.valueOf(record.getOverdueDays()) : "0");
         });
 
-        // New Column: Return Status
         TableColumn<Book, String> returnStatusColumn = new TableColumn<>("Return Status");
         returnStatusColumn.setCellValueFactory(data -> {
             BorrowRecord record = bookRecordMap.get(data.getValue());
@@ -84,10 +88,8 @@ public class ViewBorrowedBooksPage {
                     "Returned" : "Not Returned");
         });
 
-        // Add all columns to the table
         bookTable.getColumns().addAll(titleColumn, authorColumn, genreColumn, borrowDateColumn, dueDateColumn, overdueColumn, returnStatusColumn);
 
-        // Fetch Borrow Records and populate bookRecordMap
         List<BorrowRecord> borrowedRecords = borrowRecordDAO.getBorrowedRecordsByMemberId(user.getId());
         ObservableList<Book> bookList = FXCollections.observableArrayList();
 
@@ -99,7 +101,6 @@ public class ViewBorrowedBooksPage {
 
         bookTable.setItems(bookList);
 
-        // Back Button
         Button backButton = new Button("Back");
         backButton.setOnAction(event -> new MemberDashboardPage(stage, user).show());
 

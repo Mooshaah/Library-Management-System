@@ -39,7 +39,7 @@ public class MemberDashboardPage {
         Button viewBorrowedBooksButton = new Button("View Borrowed Books");
         Button payFineButton = new Button("Pay Fine");
         Button returnBookButton = new Button("Return Book");
-        Button logoutButton = new Button("Logout"); // New Logout Button
+        Button logoutButton = new Button("Logout");
 
         // Set button sizes
         viewBooksButton.setPrefSize(120, 40);
@@ -47,7 +47,7 @@ public class MemberDashboardPage {
         viewBorrowedBooksButton.setPrefSize(120, 40);
         payFineButton.setPrefSize(120, 40);
         returnBookButton.setPrefSize(120, 40);
-        logoutButton.setPrefSize(100, 30); // Smaller size for Logout button
+        logoutButton.setPrefSize(100, 30);
 
         // Button actions
         viewBooksButton.setOnAction(e -> new ViewBooksPage(stage, user).show());

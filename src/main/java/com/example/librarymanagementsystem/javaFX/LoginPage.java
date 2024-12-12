@@ -84,12 +84,12 @@ public class LoginPage {
         if (LibraryApp.MEMBER.equals(userType)) {
             isAuthenticated = memberDAO.checkMemberEmailAndPassword(email, password);
             if (isAuthenticated) {
-                authenticatedUser = memberDAO.getMemberByEmail(email); // Retrieves Member object from DAO
+                authenticatedUser = memberDAO.getMemberByEmail(email);
             }
         } else if (LibraryApp.LIBRARIAN.equals(userType)) {
             isAuthenticated = librarianDAO.checkLibrarianEmailAndPassword(email, password);
             if (isAuthenticated) {
-                authenticatedUser = librarianDAO.getLibrarianByEmail(email); // Retrieves Librarian object from DAO
+                authenticatedUser = librarianDAO.getLibrarianByEmail(email);
             }
         }
 

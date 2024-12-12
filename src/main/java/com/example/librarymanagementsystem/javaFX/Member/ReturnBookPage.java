@@ -64,7 +64,6 @@ public class ReturnBookPage {
         returnButton.setOnAction(event -> {
             ObservableList<Book> selectedBooks = bookTable.getSelectionModel().getSelectedItems();
             if (selectedBooks.isEmpty()) {
-                // Use AlertUtils.showAlert for error
                 AlertUtils.showAlert(Alert.AlertType.ERROR, "No Books Selected", "Please select at least one book to return.");
                 return;
             }
@@ -77,7 +76,6 @@ public class ReturnBookPage {
             bookList.removeAll(selectedBooks);
             bookTable.setItems(FXCollections.observableArrayList(bookList));
 
-            // Use AlertUtils.showAlert for success
             AlertUtils.showAlert(Alert.AlertType.INFORMATION, "Success", "Books returned successfully!");
         });
 

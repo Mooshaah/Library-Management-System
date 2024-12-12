@@ -2,7 +2,6 @@ package com.example.librarymanagementsystem.javaFX.Member;
 
 import com.example.librarymanagementsystem.Backend.DAOs.BookDAO;
 import com.example.librarymanagementsystem.Backend.DAOs.BorrowRecordDAO;
-import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
 import com.example.librarymanagementsystem.Backend.Models.Book;
 import com.example.librarymanagementsystem.Backend.Models.User;
 import com.example.librarymanagementsystem.javaFX.AlertUtils;
@@ -20,14 +19,12 @@ import java.util.List;
 
 public class BorrowBookPage {
     private final Stage stage;
-    private final LibrarianDAO librarianDAO;
     private final BookDAO bookDAO;
     private final BorrowRecordDAO borrowRecordDAO;
     private final User user;
 
     public BorrowBookPage(Stage stage, User user) {
         this.stage = stage;
-        this.librarianDAO = new LibrarianDAO();
         this.borrowRecordDAO = new BorrowRecordDAO();
         this.bookDAO = new BookDAO();
         this.user = user;

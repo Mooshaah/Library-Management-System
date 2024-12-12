@@ -15,7 +15,9 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +68,8 @@ public class ViewAllRecordsPage {
         TableView<BorrowRecord> tableView = new TableView<>();
         tableView.setPrefHeight(400);
 
-        // SimpleDateFormat for formatting dates
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        // Columns
         TableColumn<BorrowRecord, String> titleColumn = new TableColumn<>("Book Title");
         titleColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getBook().getTitle()));
 
@@ -94,7 +94,12 @@ public class ViewAllRecordsPage {
         TableColumn<BorrowRecord, String> overdueColumn = new TableColumn<>("Overdue Days");
         overdueColumn.setCellValueFactory(data -> {
             BorrowRecord record = bookRecordMap.get(data.getValue());
-            record.calculateOverdueDays(record.getReturnDate());
+            if (record.getReturnDate() == null) {
+                LocalDate today = LocalDate.now();
+                record.calculateOverdueDays(Date.valueOf(today));
+            } else {
+                record.calculateOverdueDays(record.getReturnDate());
+            }
             return new SimpleStringProperty(record != null ? String.valueOf(record.getOverdueDays()) : "0");
         });
 
