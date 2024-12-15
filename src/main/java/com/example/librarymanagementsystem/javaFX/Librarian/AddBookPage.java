@@ -91,8 +91,14 @@ public class AddBookPage {
             try {
                 Book newBook = new Book(0, publicationDate, title, genre, selectedAuthor, true);
                 bookDAO.addBook(newBook, selectedAuthor.getId());
+
+                // Success feedback and field clearing
                 statusLabel.setTextFill(Color.GREEN);
                 statusLabel.setText("Book added successfully.");
+                titleField.clear();
+                genreField.clear();
+                publicationDatePicker.setValue(null);
+                authorComboBox.setValue(null);
             } catch (Exception e) {
                 statusLabel.setTextFill(Color.RED);
                 statusLabel.setText("Failed to add book. Ensure data is valid.");

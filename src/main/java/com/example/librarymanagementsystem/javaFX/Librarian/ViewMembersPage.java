@@ -72,7 +72,7 @@ public class ViewMembersPage {
 
         layout.getChildren().addAll(memberTable, backButton);
 
-        Scene scene = new Scene(layout, 600, 500);
+        Scene scene = new Scene(layout, 500, 500);
         stage.setScene(scene);
         stage.show();
     }

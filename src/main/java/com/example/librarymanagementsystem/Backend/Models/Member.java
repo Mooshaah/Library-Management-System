@@ -63,11 +63,11 @@ public class Member implements User {
         return paymentDue;
     }
 
-    public void addFine(double amount) {
-        paymentDue += amount;
-    }
-
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setPaymentDue(double paymentDue) {
+        this.paymentDue = paymentDue;
     }
 }

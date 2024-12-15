@@ -59,7 +59,7 @@ public class ViewAllRecordsPage {
         backButton.setOnAction(event -> new LibrarianDashboardPage(stage, user).show());
         layout.getChildren().addAll(recordTable, backButton);
 
-        Scene scene = new Scene(layout, 800, 600);
+        Scene scene = new Scene(layout, 700, 500);
         stage.setScene(scene);
         stage.show();
     }

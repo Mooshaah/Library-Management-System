@@ -21,114 +21,109 @@ public class BorrowRecordDAO {
     }
 
     public void borrowBook(int memberID, Book book) {
-        String query = "INSERT INTO borrowing_record (BorrowDate, DueDate, MemberID) VALUES (?, ?, ?)";
+        String query = "INSERT INTO borrowing_record (BorrowDate, DueDate, MemberID, BookID) VALUES (?, ?, ?, ?)";
         String updateBookAvailability = "UPDATE book SET availability = false WHERE BookID = ?";
-        String linkBookRecord = "INSERT INTO book_borrowing_record (BookID, RecordID) VALUES (?, ?)";
         LocalDate borrowDate = LocalDate.now();
         LocalDate dueDate = borrowDate.plusDays(7);
 
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-             PreparedStatement bookAvailabilityStmt = connection.prepareStatement(updateBookAvailability);
-             PreparedStatement bookRecordStmt = connection.prepareStatement(linkBookRecord)) {
-
+             PreparedStatement bookAvailabilityStmt = connection.prepareStatement(updateBookAvailability)) {
             // Insert new borrow record
             statement.setDate(1, Date.valueOf(borrowDate));
             statement.setDate(2, Date.valueOf(dueDate));
             statement.setInt(3, memberID);
+            statement.setInt(4, book.getId());
             statement.executeUpdate();
-
-            // Retrieve the generated RecordID
-            int recordID;
-            try (ResultSet recordGeneratedKeys = statement.getGeneratedKeys()) {
-                if (recordGeneratedKeys.next()) {
-                    recordID = recordGeneratedKeys.getInt(1);
-                } else {
-                    throw new SQLException("Failed to retrieve the generated RecordID.");
-                }
-            }
 
             // Update book availability to false
             bookAvailabilityStmt.setInt(1, book.getId());
             bookAvailabilityStmt.executeUpdate();
-
-            // Link book to borrow record
-            bookRecordStmt.setInt(1, book.getId());
-            bookRecordStmt.setInt(2, recordID);
-            bookRecordStmt.executeUpdate();
-
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error while borrowing a book", e);
         }
     }
 
-    public void returnBook(Member member, ArrayList<Book> books) {
+    public void returnBook(Member member, Book book, int recordID) {
         String updateBookAvailability = "UPDATE book SET availability = true WHERE BookID = ?";
         String updateBookRecord = """
-                UPDATE borrowing_record br
-                JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
-                SET br.ReturnDate = ?
-                WHERE br.MemberID = ? AND bbr.BookID = ?
+                UPDATE borrowing_record
+                SET ReturnDate = ?
+                WHERE MemberID = ? AND BookID = ? AND ReturnDate IS NULL
                 """;
+        String updateMemberQuery = "UPDATE member SET PaymentDue = ? WHERE MemberID = ?";
         LocalDate returnDate = LocalDate.now();
 
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement updateBookRecordStatement = connection.prepareStatement(updateBookRecord);
+             PreparedStatement bookAvailabilityStatement = connection.prepareStatement(updateBookAvailability);
+             PreparedStatement updateMemberStatement = connection.prepareStatement(updateMemberQuery)) {
 
-        try (Connection connection = dbConnector.connect(); PreparedStatement updateBookRecordStatement = connection.prepareStatement(updateBookRecord); PreparedStatement bookAvailabilityStatement = connection.prepareStatement(updateBookAvailability)) {
-            for (Book book : books) {
-                updateBookRecordStatement.setDate(1, Date.valueOf(returnDate));
-                updateBookRecordStatement.setInt(2, member.getId());
-                updateBookRecordStatement.setInt(3, book.getId());
-                updateBookRecordStatement.executeUpdate();
+            updateBookRecordStatement.setDate(1, Date.valueOf(returnDate));
+            updateBookRecordStatement.setInt(2, member.getId());
+            updateBookRecordStatement.setInt(3, book.getId());
+            updateBookRecordStatement.executeUpdate();
 
-                bookAvailabilityStatement.setInt(1, book.getId());
-                bookAvailabilityStatement.executeUpdate();
+            // Update book availability to true
+            bookAvailabilityStatement.setInt(1, book.getId());
+            bookAvailabilityStatement.executeUpdate();
 
-                fineDAO.calculateFine(member.getId());
+            // Calculate fine and add it to the member's PaymentDue
+            double fineAmount = fineDAO.calculateFine(member.getId(), recordID);
+            if (fineAmount > 0) {
+                double updatedPaymentDue = member.getPaymentDue() + fineAmount;
+                member.setPaymentDue(updatedPaymentDue);
 
+                // Update the member's PaymentDue in the database
+                updateMemberStatement.setDouble(1, updatedPaymentDue);
+                updateMemberStatement.setInt(2, member.getId());
+                updateMemberStatement.executeUpdate();
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException();
+            throw new RuntimeException("Error while returning the book and updating member fine.", e);
         }
     }
 
-    public ArrayList<Book> getBorrowedBooksByMemberId(int memberId) {
-        ArrayList<Book> borrowedBooks = new ArrayList<>();
+    public List<Book> getBorrowedBooksByMemberId(int memberId) {
+        List<Book> books = new ArrayList<>();
         String query = """
-                SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability, a.AuthorID, a.FirstName, a.LastName
-                FROM book b
+                SELECT b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
+                       a.AuthorID, a.FirstName AS AuthorFirstName, a.LastName AS AuthorLastName
+                FROM borrowing_record br
+                JOIN book b ON br.BookID = b.BookID
                 JOIN book_author ba ON b.BookID = ba.BookID
                 JOIN author a ON ba.AuthorID = a.AuthorID
-                JOIN book_borrowing_record bbr ON b.BookID = bbr.BookID
-                JOIN borrowing_record br ON bbr.RecordID = br.RecordID
                 WHERE br.MemberID = ? AND br.ReturnDate IS NULL
                 """;
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
-        try (Connection connection = dbConnector.connect(); PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, memberId);
-            ResultSet resultSet = statement.executeQuery();
+            ResultSet rs = statement.executeQuery();
 
-            while (resultSet.next()) {
-                int bookId = resultSet.getInt("BookID");
-                String title = resultSet.getString("Title");
-                String genre = resultSet.getString("Genre");
-                String publicationDate = resultSet.getString("PublicationDate");
-                boolean availability = resultSet.getBoolean("Availability");
+            while (rs.next()) {
+                int bookId = rs.getInt("BookID");
+                String title = rs.getString("Title");
+                String genre = rs.getString("Genre");
+                String publicationDate = rs.getString("PublicationDate");
+                boolean availability = rs.getBoolean("Availability");
 
-                int authorId = resultSet.getInt("AuthorID");
-                String authorFirstName = resultSet.getString("FirstName");
-                String authorLastName = resultSet.getString("LastName");
-
+                int authorId = rs.getInt("AuthorID");
+                String authorFirstName = rs.getString("AuthorFirstName");
+                String authorLastName = rs.getString("AuthorLastName");
                 Author author = new Author(authorId, authorFirstName, authorLastName);
-                borrowedBooks.add(new Book(bookId, publicationDate, title, genre, author, availability));
-            }
 
+                books.add(new Book(bookId, publicationDate, title, genre, author, availability));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Error fetching borrowed books for member ID: " + memberId, e);
         }
 
-        return borrowedBooks;
+        return books;
     }
 
     public List<BorrowRecord> getBorrowedRecordsByMemberId(int memberId) {
@@ -137,8 +132,7 @@ public class BorrowRecordDAO {
                 SELECT br.RecordID, br.BorrowDate, br.DueDate, br.ReturnDate, b.BookID, b.Title, b.Genre, b.PublicationDate, b.Availability,
                        a.AuthorID, a.FirstName AS AuthorFirstName, a.LastName AS AuthorLastName
                 FROM borrowing_record br
-                JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
-                JOIN book b ON bbr.BookID = b.BookID
+                JOIN book b ON br.BookID = b.BookID
                 JOIN book_author ba ON b.BookID = ba.BookID
                 JOIN author a ON ba.AuthorID = a.AuthorID
                 WHERE br.MemberID = ?
@@ -195,8 +189,7 @@ public class BorrowRecordDAO {
                        m.MemberID, m.FirstName AS MemberFirstName, m.LastName AS MemberLastName, 
                        m.PhoneNumber, m.Email, m.Type, m.Department, m.PaymentDue
                 FROM borrowing_record br
-                JOIN book_borrowing_record bbr ON br.RecordID = bbr.RecordID
-                JOIN book b ON bbr.BookID = b.BookID
+                JOIN book b ON br.BookID = b.BookID
                 JOIN book_author ba ON b.BookID = ba.BookID
                 JOIN author a ON ba.AuthorID = a.AuthorID
                 JOIN member m ON br.MemberID = m.MemberID
@@ -237,6 +230,7 @@ public class BorrowRecordDAO {
 
                 BorrowRecord borrowRecord = new BorrowRecord(recordId, borrowDate, dueDate, book, member);
                 borrowRecord.setReturnDate(returnDate);
+
                 borrowRecords.add(borrowRecord);
             }
         } catch (SQLException e) {
@@ -245,5 +239,24 @@ public class BorrowRecordDAO {
         }
 
         return borrowRecords;
+    }
+
+    public int getBorrowRecordByBookID(int bookId) {
+        String query = "SELECT RecordID FROM borrowing_record WHERE BookID = ? AND ReturnDate IS NULL";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setInt(1, bookId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("RecordID");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error fetching BorrowRecordID for BookID: " + bookId, e);
+        }
+
+        return -1;
     }
 }

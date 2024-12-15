@@ -17,50 +17,24 @@ public class MemberDAO {
     }
 
     public boolean createMember(Member member) {
+        if (checkMemberEmail(member.getEmail())) return false;
+
         String query = "INSERT INTO member (FirstName, LastName, PhoneNumber, Email, Password, Type, Department) VALUES (?,?,?,?,?,?,?)";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
-            if (!checkMemberEmail(member.getEmail())) {
-                statement.setString(1, member.getFirstName());
-                statement.setString(2, member.getLastName());
-                statement.setString(3, member.getPhoneNumber());
-                statement.setString(4, member.getEmail());
-                statement.setString(5, member.getPassword());
-                statement.setString(6, member.getType());
-                statement.setString(7, member.getDepartment());
-                statement.executeUpdate();
-                return true;
-            }
-
+            statement.setString(1, member.getFirstName());
+            statement.setString(2, member.getLastName());
+            statement.setString(3, member.getPhoneNumber());
+            statement.setString(4, member.getEmail());
+            statement.setString(5, member.getPassword());
+            statement.setString(6, member.getType());
+            statement.setString(7, member.getDepartment());
+            statement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
-    }
-
-    public Member getMemberById(int id) {
-        String query = "SELECT * FROM member WHERE MemberID= ?";
-        Member member = null;
-        try (Connection connection = dbConnector.connect();
-             PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setInt(1, id);
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                String memberFname = result.getString("FirstName");
-                String memberLname = result.getString("LastName");
-                String memberPhoneNumber = result.getString("PhoneNumber");
-                String memberEmail = result.getString("Email");
-                String memberPassword = result.getString("Password");
-                String memberType = result.getString("Type");
-                String memberDepartment = result.getString("Department");
-                double memberPaymentDue = result.getDouble("PaymentDue");
-                member = new Member(id, memberFname, memberLname, memberPhoneNumber, memberEmail, memberPassword, memberType, memberDepartment, memberPaymentDue);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return member;
     }
 
     public Boolean checkMemberEmail(String email) {
@@ -83,26 +57,21 @@ public class MemberDAO {
     }
 
     public Boolean checkMemberEmailAndPassword(String email, String password) {
-        String emailQuery = "SELECT Count(*) AS Ecount FROM member WHERE BINARY Email = ?";
-        String passwordQuery = "SELECT Count(*) AS Pcount FROM member WHERE BINARY Password = ?";
+        String query = "SELECT Email, Password FROM member WHERE Email = ? AND Password = ?";
 
         try (Connection connection = dbConnector.connect();
-             PreparedStatement emailStatement = connection.prepareStatement(emailQuery);
-             PreparedStatement passStatement = connection.prepareStatement(passwordQuery)) {
-            emailStatement.setString(1, email);
-            passStatement.setString(1, password);
-            ResultSet emailResult = emailStatement.executeQuery();
-            ResultSet passResult = passStatement.executeQuery();
-            while (emailResult.next() && passResult.next()) {
-                int eCount = emailResult.getInt("Ecount");
-                int pCount = passResult.getInt("Pcount");
-                if (eCount > 0 && pCount > 0) return true;
-                return false;
-            }
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, email);
+            statement.setString(2, password);
+            ResultSet result = statement.executeQuery();
 
+            if (result.next()) {
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return false;
     }
 
@@ -126,8 +95,7 @@ public class MemberDAO {
             while (rs.next()) {
                 return rs.getInt("MemberID");
             }
-        } catch (
-                SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
@@ -171,13 +139,11 @@ public class MemberDAO {
              ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
-                // Fetch paymentDue and check for NULL
                 double paymentDue = resultSet.getDouble("paymentDue");
                 if (resultSet.wasNull()) {
-                    paymentDue = -1; // Set to -1 if NULL
+                    paymentDue = -1;
                 }
 
-                // Create Member object
                 Member member = new Member(
                         resultSet.getInt("memberID"),
                         resultSet.getString("firstName"),
@@ -195,8 +161,6 @@ public class MemberDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return members;
     }
 }
-

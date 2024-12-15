@@ -101,7 +101,7 @@ public class RemoveBookPage {
 
         layout.getChildren().addAll(searchField, bookTable, removeButton, statusLabel, backButton);
 
-        Scene scene = new Scene(layout, 600, 400);
+        Scene scene = new Scene(layout, 600, 500);
         stage.setScene(scene);
         stage.show();
     }

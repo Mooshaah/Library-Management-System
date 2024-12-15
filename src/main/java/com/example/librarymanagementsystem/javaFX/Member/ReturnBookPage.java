@@ -15,8 +15,6 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReturnBookPage {
@@ -57,26 +55,24 @@ public class ReturnBookPage {
         ObservableList<Book> bookList = FXCollections.observableArrayList(borrowedBooks);
         bookTable.setItems(bookList);
 
-        // Allow multiple selection in the TableView
-        bookTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        // Allow single selection in the TableView
+        bookTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-        Button returnButton = new Button("Return Selected Books");
+        Button returnButton = new Button("Return Selected Book");
         returnButton.setOnAction(event -> {
-            ObservableList<Book> selectedBooks = bookTable.getSelectionModel().getSelectedItems();
-            if (selectedBooks.isEmpty()) {
-                AlertUtils.showAlert(Alert.AlertType.ERROR, "No Books Selected", "Please select at least one book to return.");
+            Book selectedBook = bookTable.getSelectionModel().getSelectedItem();
+            if (selectedBook == null) {
+                AlertUtils.showAlert(Alert.AlertType.ERROR, "No Book Selected", "Please select a book to return.");
                 return;
             }
-
-            ArrayList<Book> booksToReturn = new ArrayList<>(selectedBooks);
-            LocalDate testReturnDate = LocalDate.of(2024, 12, 14); // Placeholder for return date
-            borrowRecordDAO.returnBook((Member) user, booksToReturn);
+            int recordID = borrowRecordDAO.getBorrowRecordByBookID(selectedBook.getId());
+            borrowRecordDAO.returnBook((Member) user, selectedBook, recordID);
 
             // Refresh the table view
-            bookList.removeAll(selectedBooks);
+            bookList.remove(selectedBook);
             bookTable.setItems(FXCollections.observableArrayList(bookList));
 
-            AlertUtils.showAlert(Alert.AlertType.INFORMATION, "Success", "Books returned successfully!");
+            AlertUtils.showAlert(Alert.AlertType.INFORMATION, "Success", "Book returned successfully!");
         });
 
         Button backButton = new Button("Back");

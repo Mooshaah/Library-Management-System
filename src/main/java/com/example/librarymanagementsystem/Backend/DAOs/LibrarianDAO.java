@@ -17,7 +17,9 @@ public class LibrarianDAO {
         dbConnector = new DBConnector();
     }
 
-    public void createLibrarian(Librarian librarian) {
+    public boolean createLibrarian(Librarian librarian) {
+        if (getLibrarianByEmail(librarian.getEmail()) != null) return false;
+
         String query = "INSERT INTO librarian (FirstName,LastName,PhoneNumber,Email,Password) VALUES (?,?,?,?,?)";
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
@@ -25,35 +27,42 @@ public class LibrarianDAO {
             statement.setString(2, librarian.getLastName());
             statement.setString(3, librarian.getPhoneNumber());
             statement.setString(4, librarian.getEmail());
-            statement.setString(5, librarian.getPhoneNumber());
-            statement.setString(6, librarian.getPassword());
+            statement.setString(5, librarian.getPassword());
+            statement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void deleteLibrarian(int librarianId) {
+        String query = "DELETE FROM librarian WHERE LibrarianID = ?";
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setInt(1, librarianId);
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public Boolean checkLibrarianEmailAndPassword(String email, String password) {
-        String emailQuery = "SELECT Count(*) AS Ecount FROM librarian WHERE BINARY Email = ?";
-        String passwordQuery = "SELECT Count(*) AS Pcount FROM librarian WHERE BINARY Password = ?";
+    public Boolean authenticateLibrarian(String email, String password) {
+        String query = "SELECT Email, Password FROM librarian WHERE Email = ? AND Password = ?";
 
         try (Connection connection = dbConnector.connect();
-             PreparedStatement emailStatement = connection.prepareStatement(emailQuery);
-             PreparedStatement passStatement = connection.prepareStatement(passwordQuery)) {
-            emailStatement.setString(1, email);
-            passStatement.setString(1, password);
-            ResultSet emailResult = emailStatement.executeQuery();
-            ResultSet passResult = passStatement.executeQuery();
-            while (emailResult.next() && passResult.next()) {
-                int eCount = emailResult.getInt("Ecount");
-                int pCount = passResult.getInt("Pcount");
-                if (eCount > 0 && pCount > 0) return true;
-                return false;
-            }
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, email);
+            statement.setString(2, password);
+            ResultSet result = statement.executeQuery();
 
+            if (result.next()) {
+                return true;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return false;
     }
 
@@ -62,15 +71,11 @@ public class LibrarianDAO {
         try (Connection connection = dbConnector.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
-            // Set parameters for the query
             statement.setString(1, author.getFirstName());
             statement.setString(2, author.getLastName());
-
-            // Execute the insert query
             statement.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Failed to add author: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -106,19 +111,42 @@ public class LibrarianDAO {
             ResultSet resultSet = statement.executeQuery();
 
             if (resultSet.next()) {
-                return new Librarian(
-                        resultSet.getInt("LibrarianID"),
+                return new Librarian(resultSet.getInt("LibrarianID"),
                         resultSet.getString("firstName"),
                         resultSet.getString("lastName"),
                         resultSet.getString("phoneNumber"),
                         resultSet.getString("email"),
-                        resultSet.getString("password")
-                );
+                        resultSet.getString("password"));
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public ArrayList<Librarian> getAllLibrarians() {
+        ArrayList<Librarian> librarians = new ArrayList<>();
+        String query = "SELECT * FROM librarian";
+
+        try (Connection connection = dbConnector.connect();
+             PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                librarians.add(new Librarian(
+                        resultSet.getInt("LibrarianID"),
+                        resultSet.getString("FirstName"),
+                        resultSet.getString("LastName"),
+                        resultSet.getString("PhoneNumber"),
+                        resultSet.getString("Email"),
+                        resultSet.getString("Password")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return librarians;
     }
 }

@@ -2,8 +2,10 @@ package com.example.librarymanagementsystem.javaFX;
 
 import com.example.librarymanagementsystem.Backend.DAOs.LibrarianDAO;
 import com.example.librarymanagementsystem.Backend.DAOs.MemberDAO;
+import com.example.librarymanagementsystem.Backend.Models.Admin;
 import com.example.librarymanagementsystem.Backend.Models.Librarian;
 import com.example.librarymanagementsystem.Backend.Models.User;
+import com.example.librarymanagementsystem.javaFX.Admin.AdminDashboardPage;
 import com.example.librarymanagementsystem.javaFX.Librarian.LibrarianDashboardPage;
 import com.example.librarymanagementsystem.javaFX.Member.MemberDashboardPage;
 import javafx.geometry.Pos;
@@ -21,10 +23,12 @@ public class LoginPage {
     private final String userType;
     private final MemberDAO memberDAO = new MemberDAO();
     private final LibrarianDAO librarianDAO = new LibrarianDAO();
+    private final Admin admin;
 
     public LoginPage(Stage stage, String userType) {
         this.stage = stage;
         this.userType = userType;
+        this.admin = new Admin(1, "Philo", "Zaki", "admin", "admin");
     }
 
     public void show() {
@@ -87,9 +91,14 @@ public class LoginPage {
                 authenticatedUser = memberDAO.getMemberByEmail(email);
             }
         } else if (LibraryApp.LIBRARIAN.equals(userType)) {
-            isAuthenticated = librarianDAO.checkLibrarianEmailAndPassword(email, password);
+            isAuthenticated = librarianDAO.authenticateLibrarian(email, password);
             if (isAuthenticated) {
                 authenticatedUser = librarianDAO.getLibrarianByEmail(email);
+            }
+        } else if (LibraryApp.ADMIN.equals(userType)) {
+            isAuthenticated = admin.getEmail().equals(email) && admin.getPassword().equals(password);
+            if (isAuthenticated) {
+                authenticatedUser = admin;
             }
         }
 
@@ -104,6 +113,8 @@ public class LoginPage {
 
         if (authenticatedUser instanceof Librarian) {
             new LibrarianDashboardPage(stage, authenticatedUser).show();
+        } else if (authenticatedUser instanceof Admin) {
+            new AdminDashboardPage(stage, authenticatedUser).show();
         } else {
             new MemberDashboardPage(stage, authenticatedUser).show();
         }

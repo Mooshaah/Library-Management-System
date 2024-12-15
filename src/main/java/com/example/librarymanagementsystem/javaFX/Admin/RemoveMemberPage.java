@@ -1,4 +1,4 @@
-package com.example.librarymanagementsystem.javaFX.Librarian;
+package com.example.librarymanagementsystem.javaFX.Admin;
 
 import com.example.librarymanagementsystem.Backend.DAOs.MemberDAO;
 import com.example.librarymanagementsystem.Backend.Models.Member;
@@ -80,7 +80,7 @@ public class RemoveMemberPage {
 
         // Back button
         Button backButton = new Button("Back");
-        backButton.setOnAction(event -> new LibrarianDashboardPage(stage, user).show());
+        backButton.setOnAction(event -> new AdminDashboardPage(stage, user).show());
 
         layout.getChildren().addAll(new Label("Select a member to remove:"), memberTable, removeButton, statusLabel, backButton);
 

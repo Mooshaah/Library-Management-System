@@ -118,12 +118,12 @@ public class BookDAO {
     }
 
     public void deleteBook(int bookId) {
-        String deleteBorrowingRecordQuery = "DELETE FROM book_borrowing_record WHERE BookID = ?";
+        String deleteBorrowingRecordQuery = "DELETE FROM borrowing_record WHERE BookID = ?";
         String deleteAuthorRelationQuery = "DELETE FROM book_author WHERE BookID = ?";
         String deleteBookQuery = "DELETE FROM book WHERE BookID = ?";
 
         try (Connection connection = dbConnector.connect()) {
-            // Delete references in book_borrowing_record table
+            // Delete references in borrowing_record table
             try (PreparedStatement deleteBorrowingRecordStmt = connection.prepareStatement(deleteBorrowingRecordQuery)) {
                 deleteBorrowingRecordStmt.setInt(1, bookId);
                 deleteBorrowingRecordStmt.executeUpdate();
@@ -142,7 +142,7 @@ public class BookDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Error deleting book ID: " + bookId, e);
         }
     }
-
 }
